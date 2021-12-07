@@ -1,0 +1,37 @@
+## Mac OS X
+*.DS_Store
+.DS_Store
+
+## Build generated
+build/
+DerivedData/
+
+## Various settings
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+
+## Other
+*.moved-aside
+*.xcuserstate
+
+## Obj-C/Swift specific
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## R.swift
+R.generated.swift
+
+## swift package manager
+Package.resolved
+!frameworks/KMDevModules/Package.resolved
+frameworks/KMDevModules.xcodeproj/xcshareddata/xcschemes/KMDevModules-Package.xcscheme
+episode-code-samples
