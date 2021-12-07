@@ -117,8 +117,10 @@ struct PrimeAlert: Identifiable {
   var id: Int { self.prime }
 }
 
+typealias CounterViewState = (count: Int, favoritePrimes: [Int])
+
 struct CounterView: View {
-  @ObservedObject var store: Store<AppState, AppAction>
+  @ObservedObject var store: Store<CounterViewState, AppAction>
   @State var isPrimeModalShown = false
   @State var alertNthPrime: PrimeAlert?
   @State var isNthPrimeButtonDisabled = false
@@ -140,7 +142,9 @@ struct CounterView: View {
     .font(.title)
     .navigationBarTitle("Counter demo")
     .sheet(isPresented: self.$isPrimeModalShown) {
-      IsPrimeModalView(store: self.store)
+      IsPrimeModalView(
+        store: self.store.view { ($0.count, $0.favoritePrimes) }
+      )
     }
     .alert(item: self.$alertNthPrime) { alert in
       Alert(
@@ -183,7 +187,7 @@ func ordinal(_ n: Int) -> String {
 }
 
 struct IsPrimeModalView: View {
-  @ObservedObject var store: Store<AppState, AppAction>
+  @ObservedObject var store: Store<PrimeModalState, AppAction>
 
   var body: some View {
     VStack {
@@ -215,15 +219,16 @@ func isPrime(_ p: Int) -> Bool {
 }
 
 struct FavoritePrimesView: View {
-  @ObservedObject var store: Store<AppState, AppAction>
+  @ObservedObject var store: Store<[Int], AppAction>
 
   var body: some View {
     List {
-      ForEach(self.store.value.favoritePrimes, id: \.self) { prime in
+      ForEach(self.store.value, id: \.self) { prime in
         Text("\(prime)")
       }
       .onDelete { indexSet in
         self.store.send(.favoritePrimes(.deleteFavoritePrimes(indexSet)))
+        self.store.send(.counter(.incrTapped))
       }
     }
     .navigationBarTitle("Favorite primes")
@@ -238,11 +243,15 @@ struct ContentView: View {
       List {
         NavigationLink(
           "Counter demo",
-          destination: CounterView(store: self.store)
+          destination: CounterView(
+            store: self.store.view { ($0.count, $0.favoritePrimes) }
+          )
         )
         NavigationLink(
           "Favorite primes",
-          destination: FavoritePrimesView(store: self.store)
+          destination: FavoritePrimesView(
+            store: self.store.view { $0.favoritePrimes }
+          )
         )
       }
       .navigationBarTitle("State management")
