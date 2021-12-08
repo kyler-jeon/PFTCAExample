@@ -1,7 +1,7 @@
+import Combine
 import ComposableArchitecture
 import Counter
 import FavoritePrimes
-import PrimeModal
 import SwiftUI
 
 public struct ForPlayground {
@@ -32,31 +32,10 @@ struct AppState {
 }
 
 enum AppAction {
-  case counter(CounterAction)
-  case primeModal(PrimeModalAction)
+//  case counter(CounterAction)
+//  case primeModal(PrimeModalAction)
+  case counterView(CounterViewAction)
   case favoritePrimes(FavoritePrimesAction)
-
-  var counter: CounterAction? {
-    get {
-      guard case let .counter(value) = self else { return nil }
-      return value
-    }
-    set {
-      guard case .counter = self, let newValue = newValue else { return }
-      self = .counter(newValue)
-    }
-  }
-
-  var primeModal: PrimeModalAction? {
-    get {
-      guard case let .primeModal(value) = self else { return nil }
-      return value
-    }
-    set {
-      guard case .primeModal = self, let newValue = newValue else { return }
-      self = .primeModal(newValue)
-    }
-  }
 
   var favoritePrimes: FavoritePrimesAction? {
     get {
@@ -68,12 +47,23 @@ enum AppAction {
       self = .favoritePrimes(newValue)
     }
   }
+
+  var counterView: CounterViewAction? {
+    get {
+      guard case let .counterView(value) = self else { return nil }
+      return value
+    }
+    set {
+      guard case .counterView = self, let newValue = newValue else { return }
+      self = .counterView(newValue)
+    }
+  }
 }
 
 extension AppState {
-  var primeModal: PrimeModalState {
+  var counterView: CounterViewState {
     get {
-      PrimeModalState(
+      CounterViewState(
         count: self.count,
         favoritePrimes: self.favoritePrimes
       )
@@ -86,8 +76,7 @@ extension AppState {
 }
 
 let appReducer: (inout AppState, AppAction) -> Void = combine(
-  pullback(counterReducer, value: \.count, action: \.counter),
-  pullback(primeModalReducer, value: \.primeModal, action: \.primeModal),
+  pullback(counterViewReducer, value: \.counterView, action: \.counterView),
   pullback(favoritePrimesReducer, value: \.favoritePrimes, action: \.favoritePrimes)
 )
 
@@ -97,12 +86,12 @@ func activityFeed(
 
   return { state, action in
     switch action {
-    case .counter:
+    case .counterView(.counter):
       break
-    case .primeModal(.removeFavoritePrimeTapped):
+    case .counterView(.primeModal(.removeFavoritePrimeTapped)):
       state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.count)))
 
-    case .primeModal(.saveFavoritePrimeTapped):
+    case .counterView(.primeModal(.saveFavoritePrimeTapped)):
       state.activityFeed.append(.init(timestamp: Date(), type: .addedFavoritePrime(state.count)))
 
     case let .favoritePrimes(.deleteFavoritePrimes(indexSet)):
@@ -124,16 +113,10 @@ struct ContentView: View {
         NavigationLink(
           "Counter demo",
           destination: CounterView(
-            store: self.store.view(
-              value: { ($0.count, $0.favoritePrimes) },
-              action: {
-                switch $0 {
-                case let .counter(action):
-                  return AppAction.counter(action)
-                case let .primeModal(action):
-                  return AppAction.primeModal(action)
-                }
-            }
+            store: self.store
+              .view(
+                value: { $0.counterView },
+                action: { .counterView($0) }
             )
           )
         )
@@ -151,22 +134,3 @@ struct ContentView: View {
     }
   }
 }
-
-#if DEBUG
-struct ContentView_Previews: PreviewProvider {
-  static var previews: some View {
-    ContentView(
-      store: Store(
-        initialValue: AppState(),
-        reducer: with(
-          appReducer,
-          compose(
-            logging,
-            activityFeed
-          )
-        )
-      )
-    )
-  }
-}
-#endif

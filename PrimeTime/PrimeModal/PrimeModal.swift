@@ -62,4 +62,3 @@ func isPrime(_ p: Int) -> Bool {
   }
   return true
 }
-

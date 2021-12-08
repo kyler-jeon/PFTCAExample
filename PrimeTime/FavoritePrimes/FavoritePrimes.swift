@@ -34,3 +34,4 @@ public struct FavoritePrimesView: View {
     .navigationBarTitle("Favorite primes")
   }
 }
+
