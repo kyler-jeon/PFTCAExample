@@ -54,7 +54,6 @@ public enum CounterViewAction {
       self = .primeModal(newValue)
     }
   }
-
 }
 
 public struct CounterView: View {
@@ -106,23 +105,6 @@ public struct CounterView: View {
       self.alertNthPrime = prime.map(PrimeAlert.init(prime:))
       self.isNthPrimeButtonDisabled = false
     }
-  }
-}
-
-func nthPrime(_ n: Int, callback: @escaping (Int?) -> Void) -> Void {
-  wolframAlpha(query: "prime \(n)") { result in
-    callback(
-      result
-        .flatMap {
-          $0.queryresult
-            .pods
-            .first(where: { $0.primary == .some(true) })?
-            .subpods
-            .first?
-            .plaintext
-      }
-      .flatMap(Int.init)
-    )
   }
 }
 

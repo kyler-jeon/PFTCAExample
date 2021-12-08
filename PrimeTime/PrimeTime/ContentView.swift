@@ -4,10 +4,6 @@ import Counter
 import FavoritePrimes
 import SwiftUI
 
-public struct ForPlayground {
-    let abc = 123
-}
-
 struct AppState {
   var count = 0
   var favoritePrimes: [Int] = []
@@ -80,13 +76,15 @@ let appReducer: (inout AppState, AppAction) -> Void = combine(
   pullback(favoritePrimesReducer, value: \.favoritePrimes, action: \.favoritePrimes)
 )
 
+
 func activityFeed(
   _ reducer: @escaping (inout AppState, AppAction) -> Void
 ) -> (inout AppState, AppAction) -> Void {
 
   return { state, action in
     switch action {
-    case .counterView(.counter):
+    case .counterView(.counter),
+         .favoritePrimes(.loadedFavoritePrimes):
       break
     case .counterView(.primeModal(.removeFavoritePrimeTapped)):
       state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.count)))
