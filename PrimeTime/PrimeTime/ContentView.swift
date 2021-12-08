@@ -9,6 +9,8 @@ struct AppState {
   var favoritePrimes: [Int] = []
   var loggedInUser: User? = nil
   var activityFeed: [Activity] = []
+  var alertNthPrime: PrimeAlert? = nil
+  var isNthPrimeButtonDisabled: Bool = false
 
   struct Activity {
     let timestamp: Date
@@ -28,21 +30,8 @@ struct AppState {
 }
 
 enum AppAction {
-//  case counter(CounterAction)
-//  case primeModal(PrimeModalAction)
   case counterView(CounterViewAction)
   case favoritePrimes(FavoritePrimesAction)
-
-  var favoritePrimes: FavoritePrimesAction? {
-    get {
-      guard case let .favoritePrimes(value) = self else { return nil }
-      return value
-    }
-    set {
-      guard case .favoritePrimes = self, let newValue = newValue else { return }
-      self = .favoritePrimes(newValue)
-    }
-  }
 
   var counterView: CounterViewAction? {
     get {
@@ -54,36 +43,53 @@ enum AppAction {
       self = .counterView(newValue)
     }
   }
+
+  var favoritePrimes: FavoritePrimesAction? {
+    get {
+      guard case let .favoritePrimes(value) = self else { return nil }
+      return value
+    }
+    set {
+      guard case .favoritePrimes = self, let newValue = newValue else { return }
+      self = .favoritePrimes(newValue)
+    }
+  }
 }
 
 extension AppState {
   var counterView: CounterViewState {
     get {
       CounterViewState(
+        alertNthPrime: self.alertNthPrime,
         count: self.count,
-        favoritePrimes: self.favoritePrimes
+        favoritePrimes: self.favoritePrimes,
+        isNthPrimeButtonDisabled: self.isNthPrimeButtonDisabled
       )
     }
     set {
+      self.alertNthPrime = newValue.alertNthPrime
       self.count = newValue.count
       self.favoritePrimes = newValue.favoritePrimes
+      self.isNthPrimeButtonDisabled = newValue.isNthPrimeButtonDisabled
     }
   }
 }
 
-let appReducer: (inout AppState, AppAction) -> Void = combine(
-  pullback(counterViewReducer, value: \.counterView, action: \.counterView),
+let appReducer = combine(
+  pullback(counterViewReducer, value: \AppState.counterView, action: \AppAction.counterView),
   pullback(favoritePrimesReducer, value: \.favoritePrimes, action: \.favoritePrimes)
 )
 
 func activityFeed(
-  _ reducer: @escaping (inout AppState, AppAction) -> Void
-) -> (inout AppState, AppAction) -> Void {
+  _ reducer: @escaping Reducer<AppState, AppAction>
+) -> Reducer<AppState, AppAction> {
 
   return { state, action in
     switch action {
     case .counterView(.counter),
-         .favoritePrimes(.loadedFavoritePrimes):
+         .favoritePrimes(.loadedFavoritePrimes),
+         .favoritePrimes(.loadButtonTapped),
+         .favoritePrimes(.saveButtonTapped):
       break
     case .counterView(.primeModal(.removeFavoritePrimeTapped)):
       state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.count)))
@@ -97,7 +103,7 @@ func activityFeed(
       }
     }
 
-    reducer(&state, action)
+    return reducer(&state, action)
   }
 }
 
@@ -110,10 +116,9 @@ struct ContentView: View {
         NavigationLink(
           "Counter demo",
           destination: CounterView(
-            store: self.store
-              .view(
-                value: { $0.counterView },
-                action: { .counterView($0) }
+            store: self.store.view(
+              value: { $0.counterView },
+              action: { .counterView($0) }
             )
           )
         )

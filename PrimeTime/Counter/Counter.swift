@@ -28,13 +28,18 @@ public func counterReducer(state: inout CounterState, action: CounterAction) -> 
 
   case .nthPrimeButtonTapped:
     state.isNthPrimeButtonDisabled = true
-    let count = state.count
-    return [{ callback in
-      nthPrime(count) { prime in
-        DispatchQueue.main.async {
-          callback(.nthPrimeResponse(prime))
-        }
-      }
+    return [
+      nthPrime(state.count)
+        .map(CounterAction.nthPrimeResponse)
+        .receive(on: .main)
+
+
+//      Effect { callback in
+//      nthPrime(count) { prime in
+//        DispatchQueue.main.async {
+//          callback(.nthPrimeResponse(prime))
+//        }
+//      }
 //      var p: Int?
 //      let sema = DispatchSemaphore(value: 0)
 //      nthPrime(count) { prime in
@@ -43,7 +48,8 @@ public func counterReducer(state: inout CounterState, action: CounterAction) -> 
 //      }
 //      sema.wait()
 //      return .nthPrimeResponse(p)
-    }]
+//    }
+  ]
 
   case let .nthPrimeResponse(prime):
     state.alertNthPrime = prime.map(PrimeAlert.init(prime:))
@@ -67,10 +73,10 @@ public struct PrimeAlert: Identifiable {
 }
 
 public struct CounterViewState {
-  var alertNthPrime: PrimeAlert?
-  var count: Int
-  var favoritePrimes: [Int]
-  var isNthPrimeButtonDisabled: Bool
+  public var alertNthPrime: PrimeAlert?
+  public var count: Int
+  public var favoritePrimes: [Int]
+  public var isNthPrimeButtonDisabled: Bool
 
   public init(
     alertNthPrime: PrimeAlert?,
@@ -120,6 +126,7 @@ public enum CounterViewAction {
       self = .primeModal(newValue)
     }
   }
+
 }
 
 public struct CounterView: View {
