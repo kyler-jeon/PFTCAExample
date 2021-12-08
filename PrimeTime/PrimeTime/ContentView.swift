@@ -76,7 +76,6 @@ let appReducer: (inout AppState, AppAction) -> Void = combine(
   pullback(favoritePrimesReducer, value: \.favoritePrimes, action: \.favoritePrimes)
 )
 
-
 func activityFeed(
   _ reducer: @escaping (inout AppState, AppAction) -> Void
 ) -> (inout AppState, AppAction) -> Void {
