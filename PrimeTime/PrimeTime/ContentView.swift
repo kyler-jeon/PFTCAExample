@@ -5,6 +5,10 @@ import FavoritePrimes
 import PrimeModal
 import SwiftUI
 
+public struct ForPlayground {
+    let abc = 123
+}
+
 struct AppState {
   var count = 0
   var favoritePrimes: [Int] = []

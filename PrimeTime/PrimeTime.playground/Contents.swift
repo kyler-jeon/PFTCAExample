@@ -12,6 +12,10 @@ store.value
 
 let newStore = store.view { $0 }
 
+var aaa = ForPlayground()
+print(aaa.abc)
+
+
 newStore.value
 newStore.send(())
 newStore.send(())
