@@ -136,29 +136,26 @@ func counterReducer(state: inout Int, action: CounterAction) {
   }
 }
 
-func primeModalReducer(state: inout AppState, action: PrimeModalAction) -> Void {
+func primeModalReducer(state: inout AppState, action: PrimeModalAction) {
   switch action {
   case .removeFavoritePrimeTapped:
     state.favoritePrimes.removeAll(where: { $0 == state.count })
-    state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.count)))
 
   case .saveFavoritePrimeTapped:
     state.favoritePrimes.append(state.count)
-    state.activityFeed.append(.init(timestamp: Date(), type: .addedFavoritePrime(state.count)))
   }
 }
 
-struct FavoritePrimesState {
-  var favoritePrimes: [Int]
-  var activityFeed: [AppState.Activity]
-}
+//struct FavoritePrimesState {
+//  var favoritePrimes: [Int]
+//  var activityFeed: [AppState.Activity]
+//}
 
-func favoritePrimesReducer(state: inout FavoritePrimesState, action: FavoritePrimesAction) -> Void {
+func favoritePrimesReducer(state: inout [Int], action: FavoritePrimesAction) {
   switch action {
   case let .deleteFavoritePrimes(indexSet):
     for index in indexSet {
-      state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.favoritePrimes[index])))
-      state.favoritePrimes.remove(at: index)
+      state.remove(at: index)
     }
   }
 }
@@ -201,20 +198,20 @@ func pullback<LocalValue, GlobalValue, LocalAction, GlobalAction>(
   }
 }
 
-extension AppState {
-  var favoritePrimesState: FavoritePrimesState {
-    get {
-      FavoritePrimesState(
-        favoritePrimes: self.favoritePrimes,
-        activityFeed: self.activityFeed
-      )
-    }
-    set {
-      self.favoritePrimes = newValue.favoritePrimes
-      self.activityFeed = newValue.activityFeed
-    }
-  }
-}
+//extension AppState {
+//  var favoritePrimesState: FavoritePrimesState {
+//    get {
+//      FavoritePrimesState(
+//        favoritePrimes: self.favoritePrimes,
+//        activityFeed: self.activityFeed
+//      )
+//    }
+//    set {
+//      self.favoritePrimes = newValue.favoritePrimes
+//      self.activityFeed = newValue.activityFeed
+//    }
+//  }
+//}
 
 struct _KeyPath<Root, Value> {
   let get: (Root) -> Value
@@ -239,10 +236,34 @@ struct EnumKeyPath<Root, Value> {
 }
 // \AppAction.counter // EnumKeyPath<AppAction, CounterAction>
 
+func activityFeed(
+  _ reducer: @escaping (inout AppState, AppAction) -> Void
+) -> (inout AppState, AppAction) -> Void {
+
+  return { state, action in
+    switch action {
+    case .counter:
+      break
+    case .primeModal(.removeFavoritePrimeTapped):
+      state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.count)))
+
+    case .primeModal(.saveFavoritePrimeTapped):
+      state.activityFeed.append(.init(timestamp: Date(), type: .addedFavoritePrime(state.count)))
+
+    case let .favoritePrimes(.deleteFavoritePrimes(indexSet)):
+      for index in indexSet {
+        state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.favoritePrimes[index])))
+      }
+    }
+
+    reducer(&state, action)
+  }
+}
+
 let _appReducer: (inout AppState, AppAction) -> Void = combine(
   pullback(counterReducer, value: \.count, action: \.counter),
   pullback(primeModalReducer, value: \.self, action: \.primeModal),
-  pullback(favoritePrimesReducer, value: \.favoritePrimesState, action: \.favoritePrimes)
+  pullback(favoritePrimesReducer, value: \.favoritePrimes, action: \.favoritePrimes)
 )
 let appReducer = pullback(_appReducer, value: \.self, action: \.self)
   //combine(combine(counterReducer, primeModalReducer), favoritePrimesReducer)
@@ -260,6 +281,18 @@ var state = AppState()
 //  )
 //)
 //counterReducer(state: state, action: .decrTapped)
+
+func logging<Value, Action>(
+  _ reducer: @escaping (inout Value, Action) -> Void
+) -> (inout Value, Action) -> Void {
+  return { value, action in
+    reducer(&value, action)
+    print("Action: \(action)")
+    print("Value:")
+    dump(value)
+    print("---")
+  }
+}
 
 // Store<AppState>
 
@@ -374,6 +407,16 @@ struct ContentView: View {
 import PlaygroundSupport
 PlaygroundPage.current.liveView = UIHostingController(
   rootView: ContentView(
-    store: Store(initialValue: AppState(), appReducer)
+    store: Store(
+      initialValue: AppState(),
+//      reducer: logging(activityFeed(appReducer))
+      reducer: with(
+        appReducer,
+        compose(
+          logging,
+          activityFeed
+        )
+      )
+    )
   )
 )
