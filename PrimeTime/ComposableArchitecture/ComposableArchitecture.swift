@@ -1,18 +1,6 @@
 import Combine
 import SwiftUI
 
-//public struct Effect<A> {
-//  public let run: (@escaping (A) -> Void) -> Void
-//
-//  public init(run: @escaping (@escaping (A) -> Void) -> Void) {
-//    self.run = run
-//  }
-//
-//  public func map<B>(_ f: @escaping (A) -> B) -> Effect<B> {
-//    return Effect<B> { callback in self.run { a in callback(f(a)) } }
-//  }
-//}
-
 public struct Effect<Output>: Publisher {
   public typealias Failure = Never
 
@@ -22,6 +10,21 @@ public struct Effect<Output>: Publisher {
     subscriber: S
   ) where S: Subscriber, Failure == S.Failure, Output == S.Input {
     self.publisher.receive(subscriber: subscriber)
+  }
+}
+
+extension Effect {
+  public static func fireAndForget(work: @escaping () -> Void) -> Effect {
+    return Deferred { () -> Empty<Output, Never> in
+      work()
+      return Empty(completeImmediately: true)
+    }.eraseToEffect()
+  }
+
+  public static func sync(work: @escaping () -> Output) -> Effect {
+    return Deferred {
+      Just(work())
+    }.eraseToEffect()
   }
 }
 
@@ -107,13 +110,6 @@ public func pullback<LocalValue, GlobalValue, LocalAction, GlobalAction>(
         return globalAction
       }
       .eraseToEffect()
-//      Effect { callback in
-//        localEffect.sink { localAction in
-//          var globalAction = globalAction
-//          globalAction[keyPath: action] = localAction
-//          callback(globalAction)
-//        }
-//      }
     }
   }
 }
@@ -130,14 +126,5 @@ public func logging<Value, Action>(
       dump(newValue)
       print("---")
       }] + effects
-  }
-}
-
-extension Effect {
-  public static func fireAndForget(work: @escaping () -> Void) -> Effect {
-    return Deferred { () -> Empty<Output, Never> in
-      work()
-      return Empty(completeImmediately: true)
-    }.eraseToEffect()
   }
 }

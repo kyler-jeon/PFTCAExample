@@ -1,3 +1,5 @@
+import Combine
+import ComposableArchitecture
 import Foundation
 
 private let wolframAlphaApiKey = "6H69Q3-828TKQJ4EP"
@@ -35,9 +37,6 @@ func nthPrime(_ n: Int) -> Effect<Int?> {
   .eraseToEffect()
 }
 
-import ComposableArchitecture
-import Combine
-
 func wolframAlpha(query: String) -> Effect<WolframAlphaResult?> {
   var components = URLComponents(string: "https://api.wolframalpha.com/v2/query")!
   components.queryItems = [
@@ -53,8 +52,4 @@ func wolframAlpha(query: String) -> Effect<WolframAlphaResult?> {
     .decode(type: WolframAlphaResult?.self, decoder: JSONDecoder())
     .replaceError(with: nil)
     .eraseToEffect()
-
-
-//  return dataTask(with: components.url(relativeTo: nil)!)
-//    .decode(as: WolframAlphaResult.self)
 }

@@ -2,7 +2,7 @@ import ComposableArchitecture
 import PrimeModal
 import SwiftUI
 
-public enum CounterAction {
+public enum CounterAction: Equatable {
   case decrTapped
   case incrTapped
   case nthPrimeButtonTapped
@@ -51,12 +51,12 @@ public let counterViewReducer = combine(
   pullback(primeModalReducer, value: \.primeModal, action: \.primeModal)
 )
 
-public struct PrimeAlert: Identifiable {
+public struct PrimeAlert: Equatable, Identifiable {
   let prime: Int
   public var id: Int { self.prime }
 }
 
-public struct CounterViewState {
+public struct CounterViewState: Equatable {
   public var alertNthPrime: PrimeAlert?
   public var count: Int
   public var favoritePrimes: [Int]
@@ -85,7 +85,7 @@ public struct CounterViewState {
   }
 }
 
-public enum CounterViewAction {
+public enum CounterViewAction: Equatable {
   case counter(CounterAction)
   case primeModal(PrimeModalAction)
 

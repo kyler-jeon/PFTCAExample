@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-public enum FavoritePrimesAction {
+public enum FavoritePrimesAction: Equatable {
   case deleteFavoritePrimes(IndexSet)
   case loadButtonTapped
   case loadedFavoritePrimes([Int])
@@ -14,14 +14,17 @@ public func favoritePrimesReducer(state: inout [Int], action: FavoritePrimesActi
     for index in indexSet {
       state.remove(at: index)
     }
-    return []
+    return [
+    ]
 
   case let .loadedFavoritePrimes(favoritePrimes):
     state = favoritePrimes
     return []
 
   case .saveButtonTapped:
-    return [saveEffect(favoritePrimes: state)]
+    return [
+      saveEffect(favoritePrimes: state)
+    ]
 
   case .loadButtonTapped:
     return [
@@ -39,16 +42,6 @@ private func saveEffect(favoritePrimes: [Int]) -> Effect<FavoritePrimesAction> {
     let documentsUrl = URL(fileURLWithPath: documentsPath)
     let favoritePrimesUrl = documentsUrl.appendingPathComponent("favorite-primes.json")
     try! data.write(to: favoritePrimesUrl)
-  }
-}
-
-import Combine
-
-extension Effect {
-  static func sync(work: @escaping () -> Output) -> Effect {
-    return Deferred {
-      Just(work())
-    }.eraseToEffect()
   }
 }
 
