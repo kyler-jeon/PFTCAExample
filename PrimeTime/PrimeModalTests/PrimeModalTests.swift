@@ -13,13 +13,12 @@ class PrimeModalTests: XCTestCase {
   }
 
   func testRemoveFavoritesPrimesTapped() {
-    var state = (count: 3, favoritePrimes: [2, 3, 5])
+    var state = (count: 3, favoritePrimes: [3, 5])
     let effects = primeModalReducer(state: &state, action: .removeFavoritePrimeTapped)
 
     let (count, favoritePrimes) = state
     XCTAssertEqual(count, 3)
-    XCTAssertEqual(favoritePrimes, [2, 5])
+    XCTAssertEqual(favoritePrimes, [5])
     XCTAssert(effects.isEmpty)
   }
 }
-

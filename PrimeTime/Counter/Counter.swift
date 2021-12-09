@@ -29,7 +29,8 @@ public func counterReducer(state: inout CounterState, action: CounterAction) -> 
   case .nthPrimeButtonTapped:
     state.isNthPrimeButtonDisabled = true
     return [
-      nthPrime(state.count)
+//      nthPrime(state.count)
+      Current.nthPrime(state.count)
         .map(CounterAction.nthPrimeResponse)
         .receive(on: DispatchQueue.main)
         .eraseToEffect()
@@ -44,6 +45,20 @@ public func counterReducer(state: inout CounterState, action: CounterAction) -> 
     state.alertNthPrime = nil
     return []
   }
+}
+
+struct CounterEnvironment {
+  var nthPrime: (Int) -> Effect<Int?>
+}
+
+extension CounterEnvironment {
+  static let live = CounterEnvironment(nthPrime: Counter.nthPrime)
+}
+
+var Current = CounterEnvironment.live
+
+extension CounterEnvironment {
+  static let mock = CounterEnvironment(nthPrime: { _ in .sync { 17 }})
 }
 
 public let counterViewReducer = combine(
