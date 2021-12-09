@@ -2,7 +2,6 @@
 //  ComposableArchitectureTests.swift
 //  ComposableArchitectureTests
 //
-//  Created by Stephen Celis on 9/8/19.
 //  Copyright © 2019 Point-Free. All rights reserved.
 //
 

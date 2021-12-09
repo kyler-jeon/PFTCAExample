@@ -13,15 +13,3 @@ PlaygroundPage.current.liveView = UIHostingController(
     )
   }
 )
-
-//
-//func compute(_ x: Int) -> Int {
-//  let computation = x * x + 1
-//  print("Computed \(computation)")
-//  return computation
-//}
-//
-//func computeAndPrint(_ x: Int) -> (Int, [String]) {
-//  let computation = x * x + 1
-//  return (computation, ["Computed \(computation)"])
-//}

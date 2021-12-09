@@ -32,9 +32,11 @@ func nthPrime(_ n: Int) -> Effect<Int?> {
     }
     .flatMap(Int.init)
   }
+  .eraseToEffect()
 }
 
 import ComposableArchitecture
+import Combine
 
 func wolframAlpha(query: String) -> Effect<WolframAlphaResult?> {
   var components = URLComponents(string: "https://api.wolframalpha.com/v2/query")!
@@ -45,14 +47,14 @@ func wolframAlpha(query: String) -> Effect<WolframAlphaResult?> {
     URLQueryItem(name: "appid", value: wolframAlphaApiKey),
   ]
 
-  return dataTask(with: components.url(relativeTo: nil)!)
-    .decode(as: WolframAlphaResult.self)
-}
+  return URLSession.shared
+    .dataTaskPublisher(for: components.url(relativeTo: nil)!)
+    .map { data, _ in data }
+    .decode(type: WolframAlphaResult?.self, decoder: JSONDecoder())
+    .replaceError(with: nil)
+    .eraseToEffect()
 
-//return [Effect { callback in
-//  nthPrime(count) { prime in
-//    DispatchQueue.main.async {
-//      callback(.nthPrimeResponse(prime))
-//    }
-//  }
-//}]
+
+//  return dataTask(with: components.url(relativeTo: nil)!)
+//    .decode(as: WolframAlphaResult.self)
+}
