@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2C297557276088C30095F370 /* WolframAlpha.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC29217322FB231F006090DF /* WolframAlpha.swift */; };
+		2C2BD1302763CC3600C4FE03 /* ComposableArchitectureTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2BD12F2763CC3500C4FE03 /* ComposableArchitectureTestSupport.swift */; };
 		DC90717022FA102900B38B42 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC90716F22FA102900B38B42 /* AppDelegate.swift */; };
 		DC90717222FA102900B38B42 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC90717122FA102900B38B42 /* SceneDelegate.swift */; };
 		DC90717422FA102900B38B42 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC90717322FA102900B38B42 /* ContentView.swift */; };
@@ -182,6 +183,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2C2BD12F2763CC3500C4FE03 /* ComposableArchitectureTestSupport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ComposableArchitectureTestSupport.swift; sourceTree = "<group>"; };
 		DC29217322FB231F006090DF /* WolframAlpha.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WolframAlpha.swift; sourceTree = "<group>"; };
 		DC39325F230241AF005A0B0A /* PrimeTime.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = PrimeTime.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		DC90716C22FA102900B38B42 /* PrimeTime.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PrimeTime.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -408,6 +410,7 @@
 		DCF0C5CC23260348008B45A0 /* CounterTests */ = {
 			isa = PBXGroup;
 			children = (
+				2C2BD12F2763CC3500C4FE03 /* ComposableArchitectureTestSupport.swift */,
 				DCF0C5CD23260348008B45A0 /* CounterTests.swift */,
 				DCF0C5CF23260348008B45A0 /* Info.plist */,
 			);
@@ -886,6 +889,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCF0C5CE23260348008B45A0 /* CounterTests.swift in Sources */,
+				2C2BD1302763CC3600C4FE03 /* ComposableArchitectureTestSupport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

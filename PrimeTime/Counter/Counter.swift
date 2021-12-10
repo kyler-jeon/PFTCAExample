@@ -1,3 +1,4 @@
+import Combine
 import ComposableArchitecture
 import PrimeModal
 import SwiftUI
@@ -20,7 +21,11 @@ public func counterReducer(state: inout CounterState, action: CounterAction) -> 
   switch action {
   case .decrTapped:
     state.count -= 1
-    return []
+    return [
+      Just(.incrTapped)
+        .delay(for: 1, scheduler: DispatchQueue.main)
+        .eraseToEffect()
+    ]
 
   case .incrTapped:
     state.count += 1
@@ -78,10 +83,10 @@ public struct CounterViewState: Equatable {
   public var isNthPrimeButtonDisabled: Bool
 
   public init(
-    alertNthPrime: PrimeAlert?,
-    count: Int,
-    favoritePrimes: [Int],
-    isNthPrimeButtonDisabled: Bool
+    alertNthPrime: PrimeAlert? = nil,
+    count: Int = 0,
+    favoritePrimes: [Int] = [],
+    isNthPrimeButtonDisabled: Bool = false
   ) {
     self.alertNthPrime = alertNthPrime
     self.count = count
