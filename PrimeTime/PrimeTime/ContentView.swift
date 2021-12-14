@@ -3,6 +3,7 @@ import Combine
 import ComposableArchitecture
 import Counter
 import FavoritePrimes
+import PrimeAlert
 import SwiftUI
 
 struct AppState: Equatable {
@@ -33,10 +34,20 @@ struct AppState: Equatable {
 
 enum AppAction: Equatable {
   case counterView(CounterViewAction)
+  case offlineCounterView(CounterViewAction)
   case favoritePrimes(FavoritePrimesAction)
 }
 
 extension AppState {
+  var favoritePrimesState: FavoritePrimesState {
+    get {
+      (self.alertNthPrime, self.favoritePrimes)
+    }
+    set {
+      (self.alertNthPrime, self.favoritePrimes) = newValue
+    }
+  }
+
   var counterView: CounterViewState {
     get {
       CounterViewState(
@@ -64,7 +75,8 @@ extension AppState {
 
 typealias AppEnvironment = (
   fileClient: FileClient,
-  nthPrime: (Int) -> Effect<Int?>
+  nthPrime: (Int) -> Effect<Int?>,
+  offlineNthPrime: (Int) -> Effect<Int?>
 )
 
 let appReducer: Reducer<AppState, AppAction, AppEnvironment> = combine(
@@ -75,10 +87,16 @@ let appReducer: Reducer<AppState, AppAction, AppEnvironment> = combine(
     environment: { $0.nthPrime }
   ),
   pullback(
+    counterViewReducer,
+    value: \AppState.counterView,
+    action: /AppAction.offlineCounterView,
+    environment: { $0.offlineNthPrime }
+  ),
+  pullback(
     favoritePrimesReducer,
-    value: \.favoritePrimes,
+    value: \.favoritePrimesState,
     action: /AppAction.favoritePrimes,
-    environment: { $0.fileClient }
+    environment: { ($0.fileClient, $0.nthPrime) }
   )
 )
 
@@ -89,14 +107,20 @@ func activityFeed(
   return { state, action, environment in
     switch action {
     case .counterView(.counter),
+         .offlineCounterView(.counter),
          .favoritePrimes(.loadedFavoritePrimes),
          .favoritePrimes(.loadButtonTapped),
-         .favoritePrimes(.saveButtonTapped):
+         .favoritePrimes(.saveButtonTapped),
+         .favoritePrimes(.primeButtonTapped(_)),
+         .favoritePrimes(.nthPrimeResponse),
+         .favoritePrimes(.alertDismissButtonTapped):
       break
-    case .counterView(.primeModal(.removeFavoritePrimeTapped)):
+    case .counterView(.primeModal(.removeFavoritePrimeTapped)),
+         .offlineCounterView(.primeModal(.removeFavoritePrimeTapped)):
       state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.count)))
 
-    case .counterView(.primeModal(.saveFavoritePrimeTapped)):
+    case .counterView(.primeModal(.saveFavoritePrimeTapped)),
+         .offlineCounterView(.primeModal(.saveFavoritePrimeTapped)):
       state.activityFeed.append(.init(timestamp: Date(), type: .addedFavoritePrime(state.count)))
 
     case let .favoritePrimes(.deleteFavoritePrimes(indexSet)):
@@ -109,26 +133,40 @@ func activityFeed(
   }
 }
 
+let isInExperiment = Bool.random()
+
 struct ContentView: View {
   @ObservedObject var store: Store<AppState, AppAction>
 
   var body: some View {
     NavigationView {
       List {
-        NavigationLink(
-          "Counter demo",
-          destination: CounterView(
-            store: self.store.view(
-              value: { $0.counterView },
-              action: { .counterView($0) }
+        if !isInExperiment {
+          NavigationLink(
+            "Counter demo",
+            destination: CounterView(
+              store: self.store.view(
+                value: { $0.counterView },
+                action: { .counterView($0) }
+              )
             )
           )
-        )
+        } else {
+          NavigationLink(
+            "Offline counter demo",
+            destination: CounterView(
+              store: self.store.view(
+                value: { $0.counterView },
+                action: { .offlineCounterView($0) }
+              )
+            )
+          )
+        }
         NavigationLink(
           "Favorite primes",
           destination: FavoritePrimesView(
             store: self.store.view(
-              value: { $0.favoritePrimes },
+              value: { $0.favoritePrimesState },
               action: { .favoritePrimes($0) }
             )
           )
