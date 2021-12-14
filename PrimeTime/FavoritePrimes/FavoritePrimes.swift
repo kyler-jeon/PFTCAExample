@@ -8,7 +8,11 @@ public enum FavoritePrimesAction: Equatable {
   case saveButtonTapped
 }
 
-public func favoritePrimesReducer(state: inout [Int], action: FavoritePrimesAction) -> [Effect<FavoritePrimesAction>] {
+public func favoritePrimesReducer(
+  state: inout [Int],
+  action: FavoritePrimesAction,
+  environment: FavoritePrimesEnvironment
+) -> [Effect<FavoritePrimesAction>] {
   switch action {
   case let .deleteFavoritePrimes(indexSet):
     for index in indexSet {
@@ -23,14 +27,14 @@ public func favoritePrimesReducer(state: inout [Int], action: FavoritePrimesActi
 
   case .saveButtonTapped:
     return [
-      Current.fileClient.save("favorite-primes.json", try! JSONEncoder().encode(state))
+      environment.save("favorite-primes.json", try! JSONEncoder().encode(state))
         .fireAndForget()
 //      saveEffect(favoritePrimes: state)
     ]
 
   case .loadButtonTapped:
     return [
-      Current.fileClient.load("favorite-primes.json")
+      environment.load("favorite-primes.json")
         .compactMap { $0 }
         .decode(type: [Int].self, decoder: JSONDecoder())
         .catch { error in Empty(completeImmediately: true) }
@@ -58,12 +62,12 @@ extension Publisher where Output == Never, Failure == Never {
 func absurd<A>(_ never: Never) -> A {}
 
 
-struct FileClient {
+public struct FileClient {
   var load: (String) -> Effect<Data?>
   var save: (String, Data) -> Effect<Never>
 }
 extension FileClient {
-  static let live = FileClient(
+  public static let live = FileClient(
     load: { fileName -> Effect<Data?> in
       .sync {
         let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
@@ -83,24 +87,25 @@ extension FileClient {
   )
 }
 
-struct FavoritePrimesEnvironment {
-  var fileClient: FileClient
-}
-extension FavoritePrimesEnvironment {
-  static let live = FavoritePrimesEnvironment(fileClient: .live)
-}
+//public struct FavoritePrimesEnvironment {
+//  var fileClient: FileClient
+//}
 
-var Current = FavoritePrimesEnvironment.live
+public typealias FavoritePrimesEnvironment = FileClient
+
+//extension FavoritePrimesEnvironment {
+//  public static let live = FavoritePrimesEnvironment(fileClient: .live)
+//}
+
+//var Current = FavoritePrimesEnvironment.live
 
 #if DEBUG
-extension FavoritePrimesEnvironment {
-  static let mock = FavoritePrimesEnvironment(
-    fileClient: FileClient(
-      load: { _ in Effect<Data?>.sync {
-        try! JSONEncoder().encode([2, 31])
-        } },
-      save: { _, _ in .fireAndForget {} }
-    )
+extension FileClient {
+  static let mock = FileClient(
+    load: { _ in Effect<Data?>.sync {
+      try! JSONEncoder().encode([2, 31])
+      } },
+    save: { _, _ in .fireAndForget {} }
   )
 }
 #endif
