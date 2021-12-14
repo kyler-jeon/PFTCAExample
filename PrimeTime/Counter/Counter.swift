@@ -5,6 +5,13 @@ import PrimeAlert
 import PrimeModal
 import SwiftUI
 
+public typealias CounterState = (
+  alertNthPrime: PrimeAlert?,
+  count: Int,
+  isNthPrimeButtonDisabled: Bool,
+  isPrimeModalShown: Bool
+)
+
 public enum CounterAction: Equatable {
   case decrTapped
   case incrTapped
@@ -15,12 +22,7 @@ public enum CounterAction: Equatable {
   case primeModalDismissed
 }
 
-public typealias CounterState = (
-  alertNthPrime: PrimeAlert?,
-  count: Int,
-  isNthPrimeButtonDisabled: Bool,
-  isPrimeModalShown: Bool
-)
+public typealias CounterEnvironment = (Int) -> Effect<Int?>
 
 public func counterReducer(
   state: inout CounterState,
@@ -30,16 +32,7 @@ public func counterReducer(
   switch action {
   case .decrTapped:
     state.count -= 1
-    let count = state.count
-    return [
-//      .fireAndForget {
-//        print(count)
-//      },
-//
-//      Just(CounterAction.incrTapped)
-//        .delay(for: 1, scheduler: DispatchQueue.main)
-//        .eraseToEffect()
-    ]
+    return []
 
   case .incrTapped:
     state.count += 1
@@ -73,22 +66,6 @@ public func counterReducer(
     return []
   }
 }
-
-//public struct CounterEnvironment {
-//  var nthPrime: (Int) -> Effect<Int?>
-//}
-
-public typealias CounterEnvironment = (Int) -> Effect<Int?>
-
-//extension CounterEnvironment {
-//  public static let live = CounterEnvironment(nthPrime: Counter.nthPrime)
-//}
-
-//var Current = CounterEnvironment.live
-
-//extension CounterEnvironment {
-//  static let mock = CounterEnvironment(nthPrime: { _ in .sync { 17 }})
-//}
 
 public let counterViewReducer: Reducer<CounterViewState, CounterViewAction, CounterEnvironment> = combine(
   pullback(
@@ -146,11 +123,13 @@ public struct CounterView: View {
   @ObservedObject var store: Store<CounterViewState, CounterViewAction>
 
   public init(store: Store<CounterViewState, CounterViewAction>) {
+    print("CounterView.init")
     self.store = store
   }
 
   public var body: some View {
-    VStack {
+    print("CounterView.body")
+    return VStack {
       HStack {
         Button("-") { self.store.send(.counter(.decrTapped)) }
         Text("\(self.store.value.count)")
