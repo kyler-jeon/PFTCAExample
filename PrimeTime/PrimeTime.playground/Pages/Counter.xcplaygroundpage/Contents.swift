@@ -12,7 +12,7 @@ PlaygroundPage.current.setLiveView(
         favoritePrimes: [],
         isNthPrimeRequestInFlight: false
       ),
-      reducer: logging(counterViewReducer),
+      reducer: logging(counterFeatureReducer),
       environment: Counter.nthPrime
     )
   )

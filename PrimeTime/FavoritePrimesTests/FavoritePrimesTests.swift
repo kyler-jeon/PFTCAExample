@@ -64,5 +64,4 @@ class FavoritePrimesTests: XCTestCase {
     XCTAssertEqual(state.favoritePrimes, [2, 31])
     XCTAssert(effects.isEmpty)
   }
-
 }

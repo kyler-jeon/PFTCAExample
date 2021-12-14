@@ -22,7 +22,6 @@ public struct CounterView: View {
     case alertDismissButtonTapped
     case isPrimeButtonTapped
     case primePopoverDismissed
-//    case doubleTap
   }
   
   let store: Store<CounterFeatureState, CounterFeatureAction>
@@ -55,15 +54,11 @@ public struct CounterView: View {
       }
       .disabled(self.viewStore.value.isNthPrimeButtonDisabled)
     }
-//    .font(.title)
-//    .navigationBarTitle("Counter demo")
     .popover(
       isPresented: Binding(
         get: { self.viewStore.value.isPrimePopoverShown },
         set: { _ in self.viewStore.send(.primePopoverDismissed) }
       )
-      //.constant(self.viewStore.value.isPrimeModalShown)
-//      onDismiss: { self.viewStore.send(.primeModalDismissed) }
     ) {
       IsPrimeModalView(
         store: self.store.scope(
@@ -82,11 +77,6 @@ public struct CounterView: View {
         }
       )
     }
-//    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-//    .background(Color.white)
-//    .onTapGesture(count: 2) {
-//      self.viewStore.send(.doubleTap)
-//    }
   }
 }
 
@@ -117,8 +107,6 @@ extension CounterFeatureAction {
       self = .counter(.isPrimeButtonTapped)
     case .primePopoverDismissed:
       self = .counter(.primeDetailDismissed)
-//    case .doubleTap:
-//      self = .counter(.requestNthPrime)
     }
   }
 }

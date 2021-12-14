@@ -13,13 +13,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         rootView: ContentView(
           store: Store(
             initialValue: AppState(),
-            reducer: with(
-              appReducer,
+            reducer: appReducer
+              .activityFeed(),
+//              .logging(),
+//            reducer: with(
+//              appReducer,
 //              compose(
 //                logging,
-                activityFeed
+//                activityFeed
 //              )
-            ),
+//            ),
+//            reducer: logging(activityFeed(barEnhancer(fooEnhancer(appReducer)))),
             environment: AppEnvironment(
               fileClient: .live,
               nthPrime: Counter.nthPrime,

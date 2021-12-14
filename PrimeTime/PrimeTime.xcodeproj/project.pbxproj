@@ -239,7 +239,6 @@
 /* Begin PBXFileReference section */
 		2A5AFE422423FCC600640A58 /* CounterView_iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterView_iOS.swift; sourceTree = "<group>"; };
 		2A5AFE442423FD2E00640A58 /* CounterView_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterView_macOS.swift; sourceTree = "<group>"; };
-		2C811570276900B60035225E /* PrimeTime.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PrimeTime.entitlements; sourceTree = "<group>"; };
 		CA304E7623F48C1400E79D83 /* PrimeAlert.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PrimeAlert.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA304E7823F48C1400E79D83 /* PrimeAlert.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrimeAlert.h; sourceTree = "<group>"; };
 		CA304E7923F48C1400E79D83 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -488,7 +487,6 @@
 		DC90716E22FA102900B38B42 /* PrimeTime */ = {
 			isa = PBXGroup;
 			children = (
-				2C811570276900B60035225E /* PrimeTime.entitlements */,
 				DC90716F22FA102900B38B42 /* AppDelegate.swift */,
 				DC90717122FA102900B38B42 /* SceneDelegate.swift */,
 				DC90717322FA102900B38B42 /* ContentView.swift */,
@@ -1573,7 +1571,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = PrimeTime/PrimeTime.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "PrimeTime/Preview\\ Content";
 				DEVELOPMENT_TEAM = Y59HNQR68T;
@@ -1596,7 +1593,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = PrimeTime/PrimeTime.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "PrimeTime/Preview\\ Content";
 				DEVELOPMENT_TEAM = Y59HNQR68T;
@@ -1608,7 +1604,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = kyler.testapp.syPrimeTime1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

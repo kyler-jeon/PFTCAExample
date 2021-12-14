@@ -13,7 +13,7 @@ struct AppState: Equatable {
   var activityFeed: [Activity] = []
   var alertNthPrime: PrimeAlert? = nil
   var isNthPrimeRequestInFlight: Bool = false
-  var isPrimeModalShown: Bool = false
+  var isPrimeDetailShown: Bool = false
 
   struct Activity: Equatable {
     let timestamp: Date
@@ -55,7 +55,7 @@ extension AppState {
         count: self.count,
         favoritePrimes: self.favoritePrimes,
         isNthPrimeRequestInFlight: self.isNthPrimeRequestInFlight,
-        isPrimeDetailShown: self.isPrimeModalShown
+        isPrimeDetailShown: self.isPrimeDetailShown
       )
     }
     set {
@@ -63,15 +63,10 @@ extension AppState {
       self.count = newValue.count
       self.favoritePrimes = newValue.favoritePrimes
       self.isNthPrimeRequestInFlight = newValue.isNthPrimeRequestInFlight
-      self.isPrimeModalShown = newValue.isPrimeDetailShown
+      self.isPrimeDetailShown = newValue.isPrimeDetailShown
     }
   }
 }
-
-//struct AppEnvironment {
-//  var counter: CounterEnvironment
-//  var favoritePrimes: FavoritePrimesEnvironment
-//}
 
 typealias AppEnvironment = (
   fileClient: FileClient,
@@ -79,59 +74,88 @@ typealias AppEnvironment = (
   offlineNthPrime: (Int) -> Effect<Int?>
 )
 
-let appReducer: Reducer<AppState, AppAction, AppEnvironment> = combine(
-  pullback(
-    counterViewReducer,
+let appReducer: Reducer<AppState, AppAction, AppEnvironment> = .combine(
+  counterFeatureReducer.pullback(
     value: \AppState.counterView,
     action: /AppAction.counterView,
     environment: { $0.nthPrime }
   ),
-  pullback(
-    counterViewReducer,
+  counterFeatureReducer.pullback(
     value: \AppState.counterView,
     action: /AppAction.offlineCounterView,
     environment: { $0.offlineNthPrime }
   ),
-  pullback(
-    favoritePrimesReducer,
+  favoritePrimesReducer.pullback(
     value: \.favoritePrimesState,
     action: /AppAction.favoritePrimes,
     environment: { ($0.fileClient, $0.nthPrime) }
   )
 )
 
-func activityFeed(
-  _ reducer: @escaping Reducer<AppState, AppAction, AppEnvironment>
-) -> Reducer<AppState, AppAction, AppEnvironment> {
+extension Reducer where Value == AppState, Action == AppAction, Environment == AppEnvironment {
+  func activityFeed() -> Reducer {
+    return .init { state, action, environment in
+      switch action {
+      case .counterView(.counter),
+           .offlineCounterView(.counter),
+           .favoritePrimes(.loadedFavoritePrimes),
+           .favoritePrimes(.loadButtonTapped),
+           .favoritePrimes(.saveButtonTapped),
+           .favoritePrimes(.primeButtonTapped(_)),
+           .favoritePrimes(.nthPrimeResponse),
+           .favoritePrimes(.alertDismissButtonTapped):
+        break
+      case .counterView(.primeModal(.removeFavoritePrimeTapped)),
+           .offlineCounterView(.primeModal(.removeFavoritePrimeTapped)):
+        state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.count)))
 
-  return { state, action, environment in
-    switch action {
-    case .counterView(.counter),
-         .offlineCounterView(.counter),
-         .favoritePrimes(.loadedFavoritePrimes),
-         .favoritePrimes(.loadButtonTapped),
-         .favoritePrimes(.saveButtonTapped),
-         .favoritePrimes(.primeButtonTapped(_)),
-         .favoritePrimes(.nthPrimeResponse),
-         .favoritePrimes(.alertDismissButtonTapped):
-      break
-    case .counterView(.primeModal(.removeFavoritePrimeTapped)),
-         .offlineCounterView(.primeModal(.removeFavoritePrimeTapped)):
-      state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.count)))
+      case .counterView(.primeModal(.saveFavoritePrimeTapped)),
+           .offlineCounterView(.primeModal(.saveFavoritePrimeTapped)):
+        state.activityFeed.append(.init(timestamp: Date(), type: .addedFavoritePrime(state.count)))
 
-    case .counterView(.primeModal(.saveFavoritePrimeTapped)),
-         .offlineCounterView(.primeModal(.saveFavoritePrimeTapped)):
-      state.activityFeed.append(.init(timestamp: Date(), type: .addedFavoritePrime(state.count)))
-
-    case let .favoritePrimes(.deleteFavoritePrimes(indexSet)):
-      for index in indexSet {
-        state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.favoritePrimes[index])))
+      case let .favoritePrimes(.deleteFavoritePrimes(indexSet)):
+        for index in indexSet {
+          state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.favoritePrimes[index])))
+        }
       }
-    }
 
-    return reducer(&state, action, environment)
+      return self(&state, action, environment)
+    }
   }
 }
+
+//func activityFeed(
+//  _ reducer: Reducer<AppState, AppAction, AppEnvironment>
+//) -> Reducer<AppState, AppAction, AppEnvironment> {
+//
+//  return .init { state, action, environment in
+//    switch action {
+//    case .counterView(.counter),
+//         .offlineCounterView(.counter),
+//         .favoritePrimes(.loadedFavoritePrimes),
+//         .favoritePrimes(.loadButtonTapped),
+//         .favoritePrimes(.saveButtonTapped),
+//         .favoritePrimes(.primeButtonTapped(_)),
+//         .favoritePrimes(.nthPrimeResponse),
+//         .favoritePrimes(.alertDismissButtonTapped):
+//      break
+//    case .counterView(.primeModal(.removeFavoritePrimeTapped)),
+//         .offlineCounterView(.primeModal(.removeFavoritePrimeTapped)):
+//      state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.count)))
+//
+//    case .counterView(.primeModal(.saveFavoritePrimeTapped)),
+//         .offlineCounterView(.primeModal(.saveFavoritePrimeTapped)):
+//      state.activityFeed.append(.init(timestamp: Date(), type: .addedFavoritePrime(state.count)))
+//
+//    case let .favoritePrimes(.deleteFavoritePrimes(indexSet)):
+//      for index in indexSet {
+//        state.activityFeed.append(.init(timestamp: Date(), type: .removedFavoritePrime(state.favoritePrimes[index])))
+//      }
+//    }
+//
+//    return reducer(&state, action, environment)
+//  }
+//}
 
 let isInExperiment = false //Bool.random()
 

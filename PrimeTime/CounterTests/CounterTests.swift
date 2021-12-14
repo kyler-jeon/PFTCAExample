@@ -8,7 +8,11 @@ import XCTest
 
 class CounterTests: XCTestCase {
   func testSnapshots() {
-    let store = Store(initialValue: CounterFeatureState(), reducer: counterViewReducer, environment: { _ in .sync { 17 } })
+    let store = Store(
+      initialValue: CounterFeatureState(),
+      reducer: counterFeatureReducer,
+      environment: { _ in .sync { 17 } }
+    )
     let view = CounterView(store: store)
 
     let vc = UIHostingController(rootView: view)
@@ -53,7 +57,7 @@ class CounterTests: XCTestCase {
   func testIncrDecrButtonTapped() {
     assert(
       initialValue: CounterFeatureState(count: 2),
-      reducer: counterViewReducer,
+      reducer: counterFeatureReducer,
       environment: { _ in .sync { 17 } },
       steps:
       Step(.send, .counter(.incrTapped)) { $0.count = 3 },
@@ -69,7 +73,7 @@ class CounterTests: XCTestCase {
         count: 7,
         isNthPrimeRequestInFlight: false
       ),
-      reducer: counterViewReducer,
+      reducer: counterFeatureReducer,
       environment: { _ in .sync { 17 } },
       steps:
       Step(.send, .counter(CounterAction.requestNthPrime)) {
@@ -92,7 +96,7 @@ class CounterTests: XCTestCase {
         count: 7,
         isNthPrimeRequestInFlight: false
       ),
-      reducer: counterViewReducer,
+      reducer: counterFeatureReducer,
       environment: { _ in .sync { nil } },
       steps:
       Step(.send, .counter(.requestNthPrime)) {
@@ -110,7 +114,7 @@ class CounterTests: XCTestCase {
         count: 1,
         favoritePrimes: [3, 5]
       ),
-      reducer: counterViewReducer,
+      reducer: counterFeatureReducer,
       environment: { _ in .sync { 17 } },
       steps:
       Step(.send, .counter(.incrTapped)) {

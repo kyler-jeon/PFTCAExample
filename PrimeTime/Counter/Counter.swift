@@ -9,30 +9,27 @@ public typealias CounterState = (
   alertNthPrime: PrimeAlert?,
   count: Int,
   isNthPrimeRequestInFlight: Bool,
-//  isPrimeModalShown: Bool
   isPrimeDetailShown: Bool
 )
 
 public enum CounterAction: Equatable {
   case decrTapped
   case incrTapped
-//  case nthPrimeButtonTapped
   case requestNthPrime
   case nthPrimeResponse(n: Int, prime: Int?)
   case alertDismissButtonTapped
   case isPrimeButtonTapped
-//  case primeModalDismissed
   case primeDetailDismissed
-//  case doubleTap
 }
 
 public typealias CounterEnvironment = (Int) -> Effect<Int?>
 
-public func counterReducer(
-  state: inout CounterState,
-  action: CounterAction,
-  environment: CounterEnvironment
-) -> [Effect<CounterAction>] {
+//public func counterReducer(
+//  state: inout CounterState,
+//  action: CounterAction,
+//  environment: CounterEnvironment
+//) -> [Effect<CounterAction>] {
+public let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, environment in
   switch action {
   case .decrTapped:
     state.count -= 1
@@ -68,28 +65,17 @@ public func counterReducer(
   case .primeDetailDismissed:
     state.isPrimeDetailShown = false
     return []
-    
-//  case .doubleTap:
-//        state.isNthPrimeRequestInFlight = true
-//    let n = state.count
-//    return [
-//      environment(state.count)
-//        .map { CounterAction.nthPrimeResponse(n: n, prime: $0) }
-//        .receive(on: DispatchQueue.main)
-//        .eraseToEffect()
-//    ]
   }
 }
+.logging()
 
-public let counterViewReducer: Reducer<CounterFeatureState, CounterFeatureAction, CounterEnvironment> = combine(
-  pullback(
-    counterReducer,
+public let counterFeatureReducer = Reducer.combine(
+  counterReducer.pullback(
     value: \CounterFeatureState.counter,
     action: /CounterFeatureAction.counter,
     environment: { $0 }
   ),
-  pullback(
-    primeModalReducer,
+  primeModalReducer.pullback(
     value: \.primeModal,
     action: /CounterFeatureAction.primeModal,
     environment: { _ in () }
@@ -100,12 +86,9 @@ public struct CounterFeatureState: Equatable {
   public var alertNthPrime: PrimeAlert?
   public var count: Int
   public var favoritePrimes: [Int]
-//  public var isNthPrimeButtonDisabled: Bool
   public var isNthPrimeRequestInFlight: Bool
   public var isPrimeDetailShown: Bool
   
-//  public var isLoadingIndicatorHidden: Bool
-
   public init(
     alertNthPrime: PrimeAlert? = nil,
     count: Int = 0,

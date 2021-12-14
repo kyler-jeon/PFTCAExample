@@ -2,94 +2,125 @@ import CasePaths
 import Combine
 import SwiftUI
 
-public typealias Reducer<Value, Action, Environment> = (inout Value, Action, Environment) -> [Effect<Action>]
+//(inout RandomNumberGenerator) -> A
+struct Gen<A> {
+  let run: (inout RandomNumberGenerator) -> A
+}
 
-public func combine<Value, Action, Environment>(
-  _ reducers: Reducer<Value, Action, Environment>...
-) -> Reducer<Value, Action, Environment> {
-  return { value, action, environment in
-    let effects = reducers.flatMap { $0(&value, action, environment) }
-    return effects
+//(inout Substring) -> A?
+struct Parser<A> {
+  let run: (inout Substring) -> A?
+}
+
+//(@escaping (A) -> Void) -> Void
+//struct Effect<A> {
+//  let run: (@escaping (A) -> Void) -> Void
+//}
+
+//public typealias Reducer<Value, Action, Environment> = (inout Value, Action, Environment) -> [Effect<Action>]
+public struct Reducer<Value, Action, Environment> {
+  let reducer: (inout Value, Action, Environment) -> [Effect<Action>]
+  
+  public init(_ reducer: @escaping (inout Value, Action, Environment) -> [Effect<Action>]) {
+    self.reducer = reducer
   }
 }
 
-public func pullback<LocalValue, GlobalValue, LocalAction, GlobalAction, LocalEnvironment, GlobalEnvironment>(
-  _ reducer: @escaping Reducer<LocalValue, LocalAction, LocalEnvironment>,
-  value: WritableKeyPath<GlobalValue, LocalValue>,
-  action: CasePath<GlobalAction, LocalAction>,
-  environment: @escaping (GlobalEnvironment) -> LocalEnvironment
-) -> Reducer<GlobalValue, GlobalAction, GlobalEnvironment> {
-  return { globalValue, globalAction, globalEnvironment in
-    guard let localAction = action.extract(from: globalAction) else { return [] }
-    let localEffects = reducer(&globalValue[keyPath: value], localAction, environment(globalEnvironment))
+extension Reducer {
+  public func callAsFunction(_ value: inout Value, _ action: Action, _ environment: Environment) -> [Effect<Action>] {
+    self.reducer(&value, action, environment)
+  }
+}
 
-    return localEffects.map { localEffect in
-      localEffect.map(action.embed)
-        .eraseToEffect()
+extension Reducer {
+  public static func combine(_ reducers: Reducer...) -> Reducer {
+    .init { value, action, environment in
+      let effects = reducers.flatMap { $0(&value, action, environment) }
+      return effects
     }
   }
 }
 
-public func logging<Value, Action, Environment>(
-  _ reducer: @escaping Reducer<Value, Action, Environment>
-) -> Reducer<Value, Action, Environment> {
-  return { value, action, environment in
-    let effects = reducer(&value, action, environment)
-    let newValue = value
-    return [.fireAndForget {
-      print("Action: \(action)")
-      print("Value:")
-      dump(newValue)
-      print("---")
-      }] + effects
-  }
-}
-
-public final class ViewStore<Value, Action>: ObservableObject {
-  @Published public fileprivate(set) var value: Value
-  fileprivate var cancellable: Cancellable?
-  public let send: (Action) -> Void
-  
-  public init(
-    initialValue value: Value,
-    send: @escaping (Action) -> Void
-  ) {
-    self.value = value
-    self.send = send
-  }
-  
-//  public func send(_ action: Action) {
-//
+//public func combine<Value, Action, Environment>(
+//  _ reducers: Reducer<Value, Action, Environment>...
+//) -> Reducer<Value, Action, Environment> {
+//  .init { value, action, environment in
+//    let effects = reducers.flatMap { $0(&value, action, environment) }
+//    return effects
 //  }
-}
+//}
 
-extension Store where Value: Equatable {
-  public var view: ViewStore<Value, Action> {
-    self.view(removeDuplicates: ==)
+extension Reducer {
+  public func pullback<GlobalValue, GlobalAction, GlobalEnvironment>(
+    value: WritableKeyPath<GlobalValue, Value>,
+    action: CasePath<GlobalAction, Action>,
+    environment: @escaping (GlobalEnvironment) -> Environment
+  ) -> Reducer<GlobalValue, GlobalAction, GlobalEnvironment> {
+    .init { globalValue, globalAction, globalEnvironment in
+      guard let localAction = action.extract(from: globalAction) else { return [] }
+      let localEffects = self(&globalValue[keyPath: value], localAction, environment(globalEnvironment))
+
+      return localEffects.map { localEffect in
+        localEffect.map(action.embed)
+          .eraseToEffect()
+      }
+    }
   }
 }
 
-extension Store {
-  public func view(
-    removeDuplicates predicate: @escaping (Value, Value) -> Bool
-  ) -> ViewStore<Value, Action> {
-    let viewStore = ViewStore(
-      initialValue: self.value,
-      send: self.send
-    )
-    
-    viewStore.cancellable = self.$value
-      .removeDuplicates(by: predicate)
-      .sink(receiveValue: { [weak viewStore] value in
-        viewStore?.value = value
-//        self
-      })
-    
-    return viewStore
+//public func pullback<LocalValue, GlobalValue, LocalAction, GlobalAction, LocalEnvironment, GlobalEnvironment>(
+//  _ reducer: Reducer<LocalValue, LocalAction, LocalEnvironment>,
+//  value: WritableKeyPath<GlobalValue, LocalValue>,
+//  action: CasePath<GlobalAction, LocalAction>,
+//  environment: @escaping (GlobalEnvironment) -> LocalEnvironment
+//) -> Reducer<GlobalValue, GlobalAction, GlobalEnvironment> {
+//  return .init { globalValue, globalAction, globalEnvironment in
+//    guard let localAction = action.extract(from: globalAction) else { return [] }
+//    let localEffects = reducer(&globalValue[keyPath: value], localAction, environment(globalEnvironment))
+//
+//    return localEffects.map { localEffect in
+//      localEffect.map(action.embed)
+//        .eraseToEffect()
+//    }
+//  }
+//}
+
+extension Reducer {
+  public func logging(
+    printer: @escaping (Environment) -> (String) -> Void = { _ in { print($0) } }
+  ) -> Reducer {
+    .init { value, action, environment in
+      let effects = self(&value, action, environment)
+      let newValue = value
+      let print = printer(environment)
+      return [.fireAndForget {
+        print("Action: \(action)")
+        print("Value:")
+        var dumpedNewValue = ""
+        dump(newValue, to: &dumpedNewValue)
+        print(dumpedNewValue)
+        print("---")
+        }] + effects
+    }
   }
 }
 
-public final class Store<Value, Action> /*: ObservableObject */ {
+//public func logging<Value, Action, Environment>(
+//  _ reducer: Reducer<Value, Action, Environment>
+//) -> Reducer<Value, Action, Environment> {
+//  return .init { value, action, environment in
+//    let effects = reducer(&value, action, environment)
+//    let newValue = value
+//    return [.fireAndForget {
+//      print("Action: \(action)")
+//      print("Value:")
+//      dump(newValue)
+//      print("---")
+//      }] + effects
+//  }
+//}
+
+public final class Store<Value, Action> {
   private let reducer: Reducer<Value, Action, Any>
   private let environment: Any
   @Published private var value: Value
@@ -98,10 +129,10 @@ public final class Store<Value, Action> /*: ObservableObject */ {
 
   public init<Environment>(
     initialValue: Value,
-    reducer: @escaping Reducer<Value, Action, Environment>,
+    reducer: Reducer<Value, Action, Environment>,
     environment: Environment
   ) {
-    self.reducer = { value, action, environment in
+    self.reducer = .init { value, action, environment in
       reducer(&value, action, environment as! Environment)
     }
     self.value = initialValue
@@ -133,7 +164,7 @@ public final class Store<Value, Action> /*: ObservableObject */ {
   ) -> Store<LocalValue, LocalAction> {
     let localStore = Store<LocalValue, LocalAction>(
       initialValue: toLocalValue(self.value),
-      reducer: { localValue, localAction, _ in
+      reducer: .init { localValue, localAction, _ in
         self.send(toGlobalAction(localAction))
         localValue = toLocalValue(self.value)
         return []
@@ -142,10 +173,48 @@ public final class Store<Value, Action> /*: ObservableObject */ {
     )
     localStore.viewCancellable = self.$value
       .map(toLocalValue)
-//      .removeDuplicates()
       .sink { [weak localStore] newValue in
         localStore?.value = newValue
       }
     return localStore
+  }
+}
+
+public final class ViewStore<Value, Action>: ObservableObject {
+  @Published public fileprivate(set) var value: Value
+  fileprivate var cancellable: Cancellable?
+  public let send: (Action) -> Void
+
+  public init(
+    initialValue value: Value,
+    send: @escaping (Action) -> Void
+  ) {
+    self.value = value
+    self.send = send
+  }
+}
+
+extension Store where Value: Equatable {
+  public var view: ViewStore<Value, Action> {
+    self.view(removeDuplicates: ==)
+  }
+}
+
+extension Store {
+  public func view(
+    removeDuplicates predicate: @escaping (Value, Value) -> Bool
+  ) -> ViewStore<Value, Action> {
+    let viewStore = ViewStore(
+      initialValue: self.value,
+      send: self.send
+    )
+
+    viewStore.cancellable = self.$value
+      .removeDuplicates(by: predicate)
+      .sink(receiveValue: { [weak viewStore] value in
+        viewStore?.value = value
+      })
+
+    return viewStore
   }
 }
