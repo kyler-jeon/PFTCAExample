@@ -1,64 +1,24 @@
 import XCTest
-@testable import FavoritePrimes
+@testable import PrimeModal
 
-class FavoritePrimesTests: XCTestCase {
-  override func setUp() {
-    super.setUp()
-    Current = .mock
-  }
+class PrimeModalTests: XCTestCase {
+  func testSaveFavoritesPrimesTapped() {
+    var state = (count: 2, favoritePrimes: [3, 5])
+    let effects = primeModalReducer(state: &state, action: .saveFavoritePrimeTapped)
 
-  func testDeleteFavoritePrimes() {
-    var state = [2, 3, 5, 7]
-    let effects = favoritePrimesReducer(state: &state, action: .deleteFavoritePrimes([2]))
-
-    XCTAssertEqual(state, [2, 3, 7])
+    let (count, favoritePrimes) = state
+    XCTAssertEqual(count, 2)
+    XCTAssertEqual(favoritePrimes, [3, 5, 2])
     XCTAssert(effects.isEmpty)
   }
 
-  func testSaveButtonTapped() {
-    var didSave = false
-    Current.fileClient.save = { _, data in
-      .fireAndForget {
-        didSave = true
-      }
-    }
+  func testRemoveFavoritesPrimesTapped() {
+    var state = (count: 3, favoritePrimes: [3, 5])
+    let effects = primeModalReducer(state: &state, action: .removeFavoritePrimeTapped)
 
-    var state = [2, 3, 5, 7]
-    let effects = favoritePrimesReducer(state: &state, action: .saveButtonTapped)
-
-    XCTAssertEqual(state, [2, 3, 5, 7])
-    XCTAssertEqual(effects.count, 1)
-
-    effects[0].sink { _ in XCTFail() }
-
-    XCTAssert(didSave)
-  }
-
-  func testLoadFavoritePrimesFlow() {
-    Current.fileClient.load = { _ in .sync { try! JSONEncoder().encode([2, 31]) } }
-
-    var state = [2, 3, 5, 7]
-    var effects = favoritePrimesReducer(state: &state, action: .loadButtonTapped)
-
-    XCTAssertEqual(state, [2, 3, 5, 7])
-    XCTAssertEqual(effects.count, 1)
-
-    var nextAction: FavoritePrimesAction!
-    let receivedCompletion = self.expectation(description: "receivedCompletion")
-    effects[0].sink(
-      receiveCompletion: { _ in
-        receivedCompletion.fulfill()
-    },
-      receiveValue: { action in
-        XCTAssertEqual(action, .loadedFavoritePrimes([2, 31]))
-        nextAction = action
-    })
-    self.wait(for: [receivedCompletion], timeout: 0)
-
-    effects = favoritePrimesReducer(state: &state, action: nextAction)
-
-    XCTAssertEqual(state, [2, 31])
+    let (count, favoritePrimes) = state
+    XCTAssertEqual(count, 3)
+    XCTAssertEqual(favoritePrimes, [5])
     XCTAssert(effects.isEmpty)
   }
-
 }

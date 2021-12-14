@@ -53,3 +53,17 @@ func wolframAlpha(query: String) -> Effect<WolframAlphaResult?> {
     .replaceError(with: nil)
     .eraseToEffect()
 }
+
+//return [Effect { callback in
+//  nthPrime(count) { prime in
+//    DispatchQueue.main.async {
+//      callback(.nthPrimeResponse(prime))
+//    }
+//  }
+//}]
+
+extension Publisher {
+  public var hush: Publishers.ReplaceError<Publishers.Map<Self, Optional<Self.Output>>> {
+    return self.map(Optional.some).replaceError(with: nil)
+  }
+}

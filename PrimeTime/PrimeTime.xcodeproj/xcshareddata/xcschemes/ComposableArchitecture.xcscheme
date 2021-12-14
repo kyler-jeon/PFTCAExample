@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1110"
+   LastUpgradeVersion = "1100"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DCF0C6012326036F008B45A0"
-               BuildableName = "FavoritePrimes.framework"
-               BlueprintName = "FavoritePrimes"
+               BlueprintIdentifier = "DCF0C59A2326032B008B45A0"
+               BuildableName = "ComposableArchitecture.framework"
+               BlueprintName = "ComposableArchitecture"
                ReferencedContainer = "container:PrimeTime.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,16 +28,6 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DCF0C6092326036F008B45A0"
-               BuildableName = "FavoritePrimesTests.xctest"
-               BlueprintName = "FavoritePrimesTests"
-               ReferencedContainer = "container:PrimeTime.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -60,9 +50,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DCF0C6012326036F008B45A0"
-            BuildableName = "FavoritePrimes.framework"
-            BlueprintName = "FavoritePrimes"
+            BlueprintIdentifier = "DCF0C59A2326032B008B45A0"
+            BuildableName = "ComposableArchitecture.framework"
+            BlueprintName = "ComposableArchitecture"
             ReferencedContainer = "container:PrimeTime.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

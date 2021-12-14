@@ -5,5 +5,6 @@
         <page name='Favorite Primes'/>
         <page name='Prime Modal'/>
         <page name='Combine'/>
+        <page name='Scratch'/>
     </pages>
 </playground>
