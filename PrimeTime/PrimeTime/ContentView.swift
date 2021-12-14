@@ -12,7 +12,7 @@ struct AppState: Equatable {
   var loggedInUser: User? = nil
   var activityFeed: [Activity] = []
   var alertNthPrime: PrimeAlert? = nil
-  var isNthPrimeButtonDisabled: Bool = false
+  var isNthPrimeRequestInFlight: Bool = false
   var isPrimeModalShown: Bool = false
 
   struct Activity: Equatable {
@@ -33,8 +33,8 @@ struct AppState: Equatable {
 }
 
 enum AppAction: Equatable {
-  case counterView(CounterViewAction)
-  case offlineCounterView(CounterViewAction)
+  case counterView(CounterFeatureAction)
+  case offlineCounterView(CounterFeatureAction)
   case favoritePrimes(FavoritePrimesAction)
 }
 
@@ -48,13 +48,13 @@ extension AppState {
     }
   }
 
-  var counterView: CounterViewState {
+  var counterView: CounterFeatureState {
     get {
-      CounterViewState(
+      CounterFeatureState(
         alertNthPrime: self.alertNthPrime,
         count: self.count,
         favoritePrimes: self.favoritePrimes,
-        isNthPrimeButtonDisabled: self.isNthPrimeButtonDisabled,
+        isNthPrimeRequestInFlight: self.isNthPrimeRequestInFlight,
         isPrimeModalShown: self.isPrimeModalShown
       )
     }
@@ -62,7 +62,7 @@ extension AppState {
       self.alertNthPrime = newValue.alertNthPrime
       self.count = newValue.count
       self.favoritePrimes = newValue.favoritePrimes
-      self.isNthPrimeButtonDisabled = newValue.isNthPrimeButtonDisabled
+      self.isNthPrimeRequestInFlight = newValue.isNthPrimeRequestInFlight
       self.isPrimeModalShown = newValue.isPrimeModalShown
     }
   }
@@ -111,7 +111,7 @@ func activityFeed(
          .favoritePrimes(.loadedFavoritePrimes),
          .favoritePrimes(.loadButtonTapped),
          .favoritePrimes(.saveButtonTapped),
-         .favoritePrimes(.primeButtonTapped(_)),
+         .favoritePrimes(.primeButtonTapped),
          .favoritePrimes(.nthPrimeResponse),
          .favoritePrimes(.alertDismissButtonTapped):
       break
@@ -136,7 +136,8 @@ func activityFeed(
 let isInExperiment = false //Bool.random()
 
 struct ContentView: View {
-  @ObservedObject var store: Store<AppState, AppAction>
+  let store: Store<AppState, AppAction>
+//  @ObservedObject var viewStore: ViewStore<???>
   
   init(store: Store<AppState, AppAction>) {
     print("ContentView.init")
@@ -151,7 +152,7 @@ struct ContentView: View {
           NavigationLink(
             "Counter demo",
             destination: CounterView(
-              store: self.store.view(
+              store: self.store.scope(
                 value: { $0.counterView },
                 action: { .counterView($0) }
               )
@@ -161,7 +162,7 @@ struct ContentView: View {
           NavigationLink(
             "Offline counter demo",
             destination: CounterView(
-              store: self.store.view(
+              store: self.store.scope(
                 value: { $0.counterView },
                 action: { .offlineCounterView($0) }
               )
@@ -171,7 +172,7 @@ struct ContentView: View {
         NavigationLink(
           "Favorite primes",
           destination: FavoritePrimesView(
-            store: self.store.view(
+            store: self.store.scope(
               value: { $0.favoritePrimesState },
               action: { .favoritePrimes($0) }
             )

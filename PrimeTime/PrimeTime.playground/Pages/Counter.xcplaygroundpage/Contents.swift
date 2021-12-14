@@ -6,11 +6,11 @@ import SwiftUI
 PlaygroundPage.current.liveView = UIHostingController(
   rootView: CounterView(
     store: Store(
-      initialValue: CounterViewState(
+      initialValue: CounterFeatureState(
         alertNthPrime: nil,
         count: 0,
         favoritePrimes: [],
-        isNthPrimeButtonDisabled: false
+        isNthPrimeRequestInFlight: false
       ),
       reducer: logging(counterViewReducer),
       environment: { _ in .sync { 7236893748932 } }

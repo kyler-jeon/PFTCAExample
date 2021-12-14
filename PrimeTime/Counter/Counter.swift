@@ -8,7 +8,7 @@ import SwiftUI
 public typealias CounterState = (
   alertNthPrime: PrimeAlert?,
   count: Int,
-  isNthPrimeButtonDisabled: Bool,
+  isNthPrimeRequestInFlight: Bool,
   isPrimeModalShown: Bool
 )
 
@@ -39,7 +39,7 @@ public func counterReducer(
     return []
 
   case .nthPrimeButtonTapped:
-    state.isNthPrimeButtonDisabled = true
+    state.isNthPrimeRequestInFlight = true
     let n = state.count
     return [
       environment(state.count)
@@ -50,7 +50,7 @@ public func counterReducer(
 
   case let .nthPrimeResponse(n, prime):
     state.alertNthPrime = prime.map { PrimeAlert(n: n, prime: $0) }
-    state.isNthPrimeButtonDisabled = false
+    state.isNthPrimeRequestInFlight = false
     return []
 
   case .alertDismissButtonTapped:
@@ -67,45 +67,48 @@ public func counterReducer(
   }
 }
 
-public let counterViewReducer: Reducer<CounterViewState, CounterViewAction, CounterEnvironment> = combine(
+public let counterViewReducer: Reducer<CounterFeatureState, CounterFeatureAction, CounterEnvironment> = combine(
   pullback(
     counterReducer,
-    value: \CounterViewState.counter,
-    action: /CounterViewAction.counter,
+    value: \CounterFeatureState.counter,
+    action: /CounterFeatureAction.counter,
     environment: { $0 }
   ),
   pullback(
     primeModalReducer,
     value: \.primeModal,
-    action: /CounterViewAction.primeModal,
+    action: /CounterFeatureAction.primeModal,
     environment: { _ in () }
   )
 )
 
-public struct CounterViewState: Equatable {
+public struct CounterFeatureState: Equatable {
   public var alertNthPrime: PrimeAlert?
   public var count: Int
   public var favoritePrimes: [Int]
-  public var isNthPrimeButtonDisabled: Bool
+//  public var isNthPrimeButtonDisabled: Bool
+  public var isNthPrimeRequestInFlight: Bool
   public var isPrimeModalShown: Bool
+  
+//  public var isLoadingIndicatorHidden: Bool
 
   public init(
     alertNthPrime: PrimeAlert? = nil,
     count: Int = 0,
     favoritePrimes: [Int] = [],
-    isNthPrimeButtonDisabled: Bool = false,
+    isNthPrimeRequestInFlight: Bool = false,
     isPrimeModalShown: Bool = false
   ) {
     self.alertNthPrime = alertNthPrime
     self.count = count
     self.favoritePrimes = favoritePrimes
-    self.isNthPrimeButtonDisabled = isNthPrimeButtonDisabled
+    self.isNthPrimeRequestInFlight = isNthPrimeRequestInFlight
     self.isPrimeModalShown = isPrimeModalShown
   }
 
   var counter: CounterState {
-    get { (self.alertNthPrime, self.count, self.isNthPrimeButtonDisabled, self.isPrimeModalShown) }
-    set { (self.alertNthPrime, self.count, self.isNthPrimeButtonDisabled, self.isPrimeModalShown) = newValue }
+    get { (self.alertNthPrime, self.count, self.isNthPrimeRequestInFlight, self.isPrimeModalShown) }
+    set { (self.alertNthPrime, self.count, self.isNthPrimeRequestInFlight, self.isPrimeModalShown) = newValue }
   }
 
   var primeModal: PrimeModalState {
@@ -114,17 +117,29 @@ public struct CounterViewState: Equatable {
   }
 }
 
-public enum CounterViewAction: Equatable {
+public enum CounterFeatureAction: Equatable {
   case counter(CounterAction)
   case primeModal(PrimeModalAction)
 }
 
 public struct CounterView: View {
-  @ObservedObject var store: Store<CounterViewState, CounterViewAction>
+  struct State: Equatable {
+    let alertNthPrime: PrimeAlert?
+    let count: Int
+    let isNthPrimeButtonDisabled: Bool
+    let isPrimeModalShown: Bool
+    let isIncrementButtonDisabled: Bool
+    let isDecrementButtonDisabled: Bool
+  }
+  let store: Store<CounterFeatureState, CounterFeatureAction>
+  @ObservedObject var viewStore: ViewStore<State>
 
-  public init(store: Store<CounterViewState, CounterViewAction>) {
+  public init(store: Store<CounterFeatureState, CounterFeatureAction>) {
     print("CounterView.init")
     self.store = store
+    self.viewStore = self.store
+      .scope(value: State.init(counterFeatureState:), action: { $0 })
+      .view
   }
 
   public var body: some View {
@@ -132,30 +147,32 @@ public struct CounterView: View {
     return VStack {
       HStack {
         Button("-") { self.store.send(.counter(.decrTapped)) }
-        Text("\(self.store.value.count)")
+          .disabled(self.viewStore.value.isDecrementButtonDisabled)
+        Text("\(self.viewStore.value.count)")
         Button("+") { self.store.send(.counter(.incrTapped)) }
+          .disabled(self.viewStore.value.isIncrementButtonDisabled)
       }
       Button("Is this prime?") { self.store.send(.counter(.isPrimeButtonTapped)) }
-      Button("What is the \(ordinal(self.store.value.count)) prime?") {
+      Button("What is the \(ordinal(self.viewStore.value.count)) prime?") {
         self.store.send(.counter(.nthPrimeButtonTapped))
       }
-      .disabled(self.store.value.isNthPrimeButtonDisabled)
+      .disabled(self.viewStore.value.isNthPrimeButtonDisabled)
     }
     .font(.title)
     .navigationBarTitle("Counter demo")
     .sheet(
-      isPresented: .constant(self.store.value.isPrimeModalShown),
+      isPresented: .constant(self.viewStore.value.isPrimeModalShown),
       onDismiss: { self.store.send(.counter(.primeModalDismissed)) }
     ) {
       IsPrimeModalView(
-        store: self.store.view(
+        store: self.store.scope(
           value: { ($0.count, $0.favoritePrimes) },
           action: { .primeModal($0) }
         )
       )
     }
     .alert(
-      item: .constant(self.store.value.alertNthPrime)
+      item: .constant(self.viewStore.value.alertNthPrime)
     ) { alert in
       Alert(
         title: Text(alert.title),
@@ -164,5 +181,16 @@ public struct CounterView: View {
         }
       )
     }
+  }
+}
+
+extension CounterView.State {
+  init(counterFeatureState: CounterFeatureState) {
+    self.alertNthPrime = counterFeatureState.alertNthPrime
+    self.count = counterFeatureState.count
+    self.isNthPrimeButtonDisabled = counterFeatureState.isNthPrimeRequestInFlight
+    self.isPrimeModalShown = counterFeatureState.isPrimeModalShown
+    self.isIncrementButtonDisabled = counterFeatureState.isNthPrimeRequestInFlight
+    self.isDecrementButtonDisabled = counterFeatureState.isNthPrimeRequestInFlight
   }
 }
