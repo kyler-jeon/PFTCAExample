@@ -111,7 +111,7 @@ func activityFeed(
          .favoritePrimes(.loadedFavoritePrimes),
          .favoritePrimes(.loadButtonTapped),
          .favoritePrimes(.saveButtonTapped),
-         .favoritePrimes(.primeButtonTapped),
+         .favoritePrimes(.primeButtonTapped(_)),
          .favoritePrimes(.nthPrimeResponse),
          .favoritePrimes(.alertDismissButtonTapped):
       break
