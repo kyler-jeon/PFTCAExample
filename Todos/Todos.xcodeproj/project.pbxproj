@@ -14,7 +14,7 @@
 		2A7569B02459E73500647512 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A7569AF2459E73500647512 /* Preview Assets.xcassets */; };
 		2A7569B32459E73500647512 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A7569B12459E73500647512 /* LaunchScreen.storyboard */; };
 		2A7569BE2459E73500647512 /* TodosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7569BD2459E73500647512 /* TodosTests.swift */; };
-		CAFB83172482C1D8002A5029 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CAFB83162482C1D8002A5029 /* ComposableArchitecture */; };
+		CAE45AD5247D9EED0017F9E6 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CAE45AD4247D9EED0017F9E6 /* ComposableArchitecture */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +51,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2A29B7D9245A322B00248B5A /* Playground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Playground.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		2A7569A32459E73400647512 /* Todos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A7569A62459E73400647512 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2A7569A82459E73400647512 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -69,7 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CAFB83172482C1D8002A5029 /* ComposableArchitecture in Frameworks */,
+				CAE45AD5247D9EED0017F9E6 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,10 +87,11 @@
 		2A75699A2459E73400647512 = {
 			isa = PBXGroup;
 			children = (
+				2A29B7D9245A322B00248B5A /* Playground.playground */,
 				2A7569A52459E73400647512 /* Todos */,
 				2A7569BC2459E73500647512 /* TodosTests */,
 				2A7569A42459E73400647512 /* Products */,
-				CAFB83152482C1D8002A5029 /* Frameworks */,
+				CAE45ACB247D9E880017F9E6 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -133,7 +135,7 @@
 			path = TodosTests;
 			sourceTree = "<group>";
 		};
-		CAFB83152482C1D8002A5029 /* Frameworks */ = {
+		CAE45ACB247D9E880017F9E6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -155,11 +157,11 @@
 			buildRules = (
 			);
 			dependencies = (
-				CAFB83192482C1E0002A5029 /* PBXTargetDependency */,
+				CAE45AD3247D9EE80017F9E6 /* PBXTargetDependency */,
 			);
 			name = Todos;
 			packageProductDependencies = (
-				CAFB83162482C1D8002A5029 /* ComposableArchitecture */,
+				CAE45AD4247D9EED0017F9E6 /* ComposableArchitecture */,
 			);
 			productName = Todos;
 			productReference = 2A7569A32459E73400647512 /* Todos.app */;
@@ -177,6 +179,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				CAE45AD7247D9F170017F9E6 /* PBXTargetDependency */,
 				2A7569BB2459E73500647512 /* PBXTargetDependency */,
 			);
 			name = TodosTests;
@@ -274,9 +277,13 @@
 			target = 2A7569A22459E73400647512 /* Todos */;
 			targetProxy = 2A7569BA2459E73500647512 /* PBXContainerItemProxy */;
 		};
-		CAFB83192482C1E0002A5029 /* PBXTargetDependency */ = {
+		CAE45AD3247D9EE80017F9E6 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = CAFB83182482C1E0002A5029 /* ComposableArchitecture */;
+			productRef = CAE45AD2247D9EE80017F9E6 /* ComposableArchitecture */;
+		};
+		CAE45AD7247D9F170017F9E6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = CAE45AD6247D9F170017F9E6 /* ComposableArchitecture */;
 		};
 /* End PBXTargetDependency section */
 
@@ -528,18 +535,23 @@
 			repositoryURL = "https://github.com/pointfreeco/swift-composable-architecture";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.0;
+				minimumVersion = 0.2.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		CAFB83162482C1D8002A5029 /* ComposableArchitecture */ = {
+		CAE45AD2247D9EE80017F9E6 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2A7569C82459E94800647512 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */;
 			productName = ComposableArchitecture;
 		};
-		CAFB83182482C1E0002A5029 /* ComposableArchitecture */ = {
+		CAE45AD4247D9EED0017F9E6 /* ComposableArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2A7569C82459E94800647512 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */;
+			productName = ComposableArchitecture;
+		};
+		CAE45AD6247D9F170017F9E6 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2A7569C82459E94800647512 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */;
 			productName = ComposableArchitecture;

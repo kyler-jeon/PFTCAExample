@@ -1,3 +1,4 @@
+import Combine
 import ComposableArchitecture
 import SwiftUI
 
@@ -39,8 +40,21 @@ enum AppAction: Equatable {
 }
 
 struct AppEnvironment {
+  var mainQueue: AnySchedulerOf<DispatchQueue>
+
+  //AnyScheduler<DispatchQueue.SchedulerTimeType, DispatchQueue.SchedulerOptions>
+
+  //Scheduler where .SchedulerTimeType == DispatchQueue.SchedulerTimeType, .SchedulerOptions == DispatchQueue.SchedulerOptions
+
   var uuid: () -> UUID
 }
+// AnyHashable
+// AnyIterator
+// AnyCollection
+// AnySubscriber
+// AnyCancellable
+// AnyPublisher
+// AnyView
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
   todoReducer.forEach(
@@ -58,9 +72,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
       struct CancelDelayId: Hashable {}
 
       return Effect(value: AppAction.todoDelayCompleted)
-        .delay(for: 1, scheduler: DispatchQueue.main)
-        .eraseToEffect()
-        .cancellable(id: CancelDelayId(), cancelInFlight: true)
+        .debounce(id: CancelDelayId(), for: 1, scheduler: environment.mainQueue)
       
     case .todo(index: let index, action: let action):
       return .none
@@ -164,6 +176,7 @@ struct ContentView_Previews: PreviewProvider {
         ),
         reducer: appReducer,
         environment: AppEnvironment(
+          mainQueue: DispatchQueue.main.eraseToAnyScheduler(),
           uuid: UUID.init
         )
       )
