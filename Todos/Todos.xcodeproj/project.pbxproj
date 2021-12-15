@@ -14,8 +14,7 @@
 		2A7569B02459E73500647512 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A7569AF2459E73500647512 /* Preview Assets.xcassets */; };
 		2A7569B32459E73500647512 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A7569B12459E73500647512 /* LaunchScreen.storyboard */; };
 		2A7569BE2459E73500647512 /* TodosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7569BD2459E73500647512 /* TodosTests.swift */; };
-		2A7569CA2459E94800647512 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 2A7569C92459E94800647512 /* ComposableArchitecture */; };
-		2A7569CB2459E94800647512 /* ComposableArchitecture in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 2A7569C92459E94800647512 /* ComposableArchitecture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		CAFB83172482C1D8002A5029 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CAFB83162482C1D8002A5029 /* ComposableArchitecture */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,7 +34,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				2A7569CB2459E94800647512 /* ComposableArchitecture in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -71,7 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2A7569CA2459E94800647512 /* ComposableArchitecture in Frameworks */,
+				CAFB83172482C1D8002A5029 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +89,7 @@
 				2A7569A52459E73400647512 /* Todos */,
 				2A7569BC2459E73500647512 /* TodosTests */,
 				2A7569A42459E73400647512 /* Products */,
+				CAFB83152482C1D8002A5029 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -134,6 +133,13 @@
 			path = TodosTests;
 			sourceTree = "<group>";
 		};
+		CAFB83152482C1D8002A5029 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -149,10 +155,11 @@
 			buildRules = (
 			);
 			dependencies = (
+				CAFB83192482C1E0002A5029 /* PBXTargetDependency */,
 			);
 			name = Todos;
 			packageProductDependencies = (
-				2A7569C92459E94800647512 /* ComposableArchitecture */,
+				CAFB83162482C1D8002A5029 /* ComposableArchitecture */,
 			);
 			productName = Todos;
 			productReference = 2A7569A32459E73400647512 /* Todos.app */;
@@ -266,6 +273,10 @@
 			isa = PBXTargetDependency;
 			target = 2A7569A22459E73400647512 /* Todos */;
 			targetProxy = 2A7569BA2459E73500647512 /* PBXContainerItemProxy */;
+		};
+		CAFB83192482C1E0002A5029 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = CAFB83182482C1E0002A5029 /* ComposableArchitecture */;
 		};
 /* End PBXTargetDependency section */
 
@@ -401,6 +412,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Todos/Preview Content\"";
+				DEVELOPMENT_TEAM = Y59HNQR68T;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Todos/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -420,6 +432,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Todos/Preview Content\"";
+				DEVELOPMENT_TEAM = Y59HNQR68T;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Todos/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -439,6 +452,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = Y59HNQR68T;
 				INFOPLIST_FILE = TodosTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -460,6 +474,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = Y59HNQR68T;
 				INFOPLIST_FILE = TodosTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -512,14 +527,19 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/swift-composable-architecture";
 			requirement = {
-				kind = exactVersion;
-				version = 0.1.0;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		2A7569C92459E94800647512 /* ComposableArchitecture */ = {
+		CAFB83162482C1D8002A5029 /* ComposableArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2A7569C82459E94800647512 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */;
+			productName = ComposableArchitecture;
+		};
+		CAFB83182482C1E0002A5029 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2A7569C82459E94800647512 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */;
 			productName = ComposableArchitecture;
