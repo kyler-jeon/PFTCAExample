@@ -114,18 +114,6 @@ struct IfCaseLet<Enum, Case, Content>: View where Content: View {
   }
 }
 
-
-//extension Binding {
-//  subscript<Subject>(
-//    dynamicMember keyPath: WritableKeyPath<Value, Subject>
-//  ) -> Binding<Subject> {
-//    Binding<Subject>(
-//      get: { self.wrappedValue[keyPath: keyPath] },
-//      set: { self.wrappedValue[keyPath: keyPath] = $0 }
-//    )
-//  }
-//}
-
 extension Binding {
   init?(unwrap binding: Binding<Value?>) {
     guard let wrappedValue = binding.wrappedValue
@@ -165,3 +153,40 @@ extension View {
     }
   }
 }
+
+extension NavigationLink {
+  init<Value, WrappedDestination>(
+    unwrap optionalValue: Binding<Value?>,
+    onNavigate: @escaping (Bool) -> Void,
+    @ViewBuilder destination: @escaping (Binding<Value>) -> WrappedDestination,
+    @ViewBuilder label: @escaping () -> Label
+  )
+  where Destination == WrappedDestination?
+  {
+    self.init(
+      isActive: optionalValue.isPresent().didSet(onNavigate),
+      destination: {
+        if let value = Binding(unwrap: optionalValue) {
+          destination(value)
+        }
+      },
+      label: label
+    )
+  }
+}
+
+extension Binding {
+  func didSet(_ callback: @escaping (Value) -> Void) -> Self {
+    .init(
+      get: { self.wrappedValue },
+      set: {
+        self.wrappedValue = $0
+        callback($0)
+      }
+    )
+  }
+}
+
+// ForEach.init: (Binding<C>,  (Binding<C.Element>) -> some View) -> ForEach
+// .sheet:       (Binding<V?>, (Binding<V>)         -> some View) -> some View
+// NavLink.init: (Binding<V?>, (Binding<V>)         -> some View) -> NavLink
