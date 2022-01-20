@@ -19,7 +19,15 @@ struct SwiftUINavigationApp: App {
               .init(item: Item(name: "Phone", color: .green, status: .outOfStock(isOnBackOrder: true))),
               .init(item: Item(name: "Headphones", color: .green, status: .outOfStock(isOnBackOrder: false))),
             ],
-            route: .row(id: keyboard.id, route: .duplicate(editedKeyboard.duplicate()))
+            route: .row(
+              id: keyboard.id,
+              route: .duplicate(
+                .init(
+                  item: editedKeyboard.duplicate(),
+                  route: .colorPicker
+                )
+              )
+            )
           ),
           selectedTab: .inventory
         )
