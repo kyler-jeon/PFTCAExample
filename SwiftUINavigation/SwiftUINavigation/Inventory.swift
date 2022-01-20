@@ -6,8 +6,6 @@ struct Item: Equatable, Identifiable {
   var name: String
   var color: Color?
   var status: Status
-//  var quantity: Int
-//  var isOnBackOrder: Bool
 
   enum Status: Equatable {
     case inStock(quantity: Int)
@@ -49,32 +47,52 @@ struct Item: Equatable, Identifiable {
 
 class InventoryViewModel: ObservableObject {
   @Published var inventory: IdentifiedArrayOf<Item>
+  @Published var itemToAdd: Item?
   @Published var itemToDelete: Item?
 
   init(
     inventory: IdentifiedArrayOf<Item> = [],
+    itemToAdd: Item? = nil,
     itemToDelete: Item? = nil
   ) {
     self.itemToDelete = itemToDelete
+    self.itemToAdd = itemToAdd
     self.inventory = inventory
   }
   
   func delete(item: Item) {
     withAnimation {
       _ = self.inventory.remove(id: item.id)
-      //self.inventory.removeAll(where: { $0.id == item.id })
     }
   }
 
   func deleteButtonTapped(item: Item) {
     self.itemToDelete = item
   }
+
+  func add(item: Item) {
+    withAnimation {
+      self.inventory.append(item)
+      self.itemToAdd = nil
+    }
+  }
+
+  func addButtonTapped() {
+    self.itemToAdd = .init(name: "", color: nil, status: .inStock(quantity: 1))
+
+    Task { @MainActor in
+      try await Task.sleep(nanoseconds: 500 * NSEC_PER_MSEC)
+      self.itemToAdd?.name = "Bluetooth Keyboard"
+    }
+  }
+
+  func cancelButtonTapped() {
+    self.itemToAdd = nil
+  }
 }
 
 struct InventoryView: View {
   @ObservedObject var viewModel: InventoryViewModel
-//  @State var deleteItemAlertIsPresented = false
-//  @State var itemToDelete: Item?
   
   var body: some View {
     List {
@@ -121,33 +139,42 @@ struct InventoryView: View {
         Text("Are you sure you want to delete this item?")
       }
     )
-//    .alert(item: self.$viewModel.itemToDelete) { item in
-//      Alert(
-//        title: Text(item.name),
-//        message: Text("Are you sure you want to delete this item?"),
-//        primaryButton: .destructive(Text("Delete")) {
-//          self.viewModel.delete(item: item)
-//        },
-//        secondaryButton: .cancel()
-//      )
-//    }
+    .toolbar {
+      ToolbarItem(placement: .primaryAction) {
+        Button("Add") { self.viewModel.addButtonTapped() }
+      }
+    }
+    .navigationTitle("Inventory")
+//    .sheet(isPresented: self.$addItemIsPresented) {
+    .sheet(item: self.$viewModel.itemToAdd) { itemToAdd in
+      NavigationView {
+        ItemView(
+          item: itemToAdd,
+          onSave: { self.viewModel.add(item: $0) },
+          onCancel: { self.viewModel.cancelButtonTapped() }
+        )
+      }
+    }
   }
 }
 
 struct InventoryView_Previews: PreviewProvider {
   static var previews: some View {
     let keyboard = Item(name: "Keyboard", color: .blue, status: .inStock(quantity: 100))
-
-    InventoryView(
-      viewModel: .init(
-        inventory: [
-          keyboard,
-          Item(name: "Charger", color: .yellow, status: .inStock(quantity: 20)),
-          Item(name: "Phone", color: .green, status: .outOfStock(isOnBackOrder: true)),
-          Item(name: "Headphones", color: .green, status: .outOfStock(isOnBackOrder: false)),
-        ],
-        itemToDelete: keyboard
+    
+    NavigationView {
+      InventoryView(
+        viewModel: .init(
+          inventory: [
+            keyboard,
+            Item(name: "Charger", color: .yellow, status: .inStock(quantity: 20)),
+            Item(name: "Phone", color: .green, status: .outOfStock(isOnBackOrder: true)),
+            Item(name: "Headphones", color: .green, status: .outOfStock(isOnBackOrder: false)),
+          ],
+          itemToAdd: .init(name: "Mouse", color: .red, status: .inStock(quantity: 100)),
+          itemToDelete: nil
+        )
       )
-    )
+    }
   }
 }
