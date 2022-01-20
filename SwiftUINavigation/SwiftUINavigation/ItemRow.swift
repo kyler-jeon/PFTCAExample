@@ -1,27 +1,63 @@
+import CasePaths
 import SwiftUI
 
 class ItemRowViewModel: Identifiable, ObservableObject {
-  @Published var deleteItemAlertIsPresented: Bool
   @Published var item: Item
+  @Published var route: Route?
+  
+  enum Route {
+    case deleteAlert
+    case duplicate(Item)
+    case edit(Item)
+  }
 
   var onDelete: () -> Void = {}
+  var onDuplicate: (Item) -> Void = { _ in }
 
   var id: Item.ID { self.item.id }
 
   init(
-    deleteItemAlertIsPresented: Bool = false,
-    item: Item
+    item: Item,
+    route: Route? = nil
   ) {
-    self.deleteItemAlertIsPresented = deleteItemAlertIsPresented
     self.item = item
+    self.route = route
   }
 
   func deleteButtonTapped() {
-    self.deleteItemAlertIsPresented = true
+    self.route = .deleteAlert
   }
 
   func deleteConfirmationButtonTapped() {
     self.onDelete()
+  }
+  
+  func editButtonTapped() {
+    self.route = .edit(self.item)
+  }
+  
+  func edit(item: Item) {
+    self.item = item
+    self.route = nil
+  }
+  
+  func cancelButtonTapped() {
+    self.route = nil
+  }
+
+  func duplicateButtonTapped() {
+    self.route = .duplicate(self.item.duplicate())
+  }
+
+  func duplicate(item: Item) {
+    self.onDuplicate(item)
+    self.route = nil
+  }
+}
+
+extension Item {
+  func duplicate() -> Self {
+    .init(name: self.name, color: self.color, status: self.status)
   }
 }
 
@@ -50,6 +86,16 @@ struct ItemRowView: View {
           .border(Color.black, width: 1)
       }
 
+      Button(action: { self.viewModel.duplicateButtonTapped() }) {
+        Image(systemName: "square.fill.on.square.fill")
+      }
+      .padding(.leading)
+
+      Button(action: { self.viewModel.editButtonTapped() }) {
+        Image(systemName: "pencil")
+      }
+      .padding(.leading)
+
       Button(action: { self.viewModel.deleteButtonTapped() }) {
         Image(systemName: "trash.fill")
       }
@@ -59,7 +105,7 @@ struct ItemRowView: View {
     .foregroundColor(self.viewModel.item.status.isInStock ? nil : Color.gray)
     .alert(
       self.viewModel.item.name,
-      isPresented: self.$viewModel.deleteItemAlertIsPresented,
+      isPresented: self.$viewModel.route.isPresent(/ItemRowViewModel.Route.deleteAlert),
       actions: {
         Button("Delete", role: .destructive) {
           self.viewModel.deleteConfirmationButtonTapped()
@@ -69,5 +115,42 @@ struct ItemRowView: View {
         Text("Are you sure you want to delete this item?")
       }
     )
+    .sheet(unwrap: self.$viewModel.route.case(/ItemRowViewModel.Route.edit)) { $item in
+      NavigationView {
+        ItemView(item: $item)
+          .navigationBarTitle("Edit")
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Cancel") {
+                self.viewModel.cancelButtonTapped()
+              }
+            }
+            ToolbarItem(placement: .primaryAction) {
+              Button("Save") {
+                self.viewModel.edit(item: item)
+              }
+            }
+          }
+      }
+    }
+    .popover(unwrap: self.$viewModel.route.case(/ItemRowViewModel.Route.duplicate)) { $item in
+      NavigationView {
+        ItemView(item: $item)
+          .navigationBarTitle("Duplicate")
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Cancel") {
+                self.viewModel.cancelButtonTapped()
+              }
+            }
+            ToolbarItem(placement: .primaryAction) {
+              Button("Add") {
+                self.viewModel.duplicate(item: item)
+              }
+            }
+          }
+      }
+      .frame(minWidth: 300, minHeight: 500)
+    }
   }
 }

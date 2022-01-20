@@ -13,6 +13,44 @@ extension Binding {
       }
     )
   }
+  
+  func isPresent<Enum, Case>(_ casePath: CasePath<Enum, Case>) -> Binding<Bool>
+  where Value == Enum? {
+    Binding<Bool>(
+      get: {
+        if let wrappedValue = self.wrappedValue, casePath.extract(from: wrappedValue) != nil {
+          return true
+        } else {
+          return false
+        }
+      },
+      set: { isPresented in
+        if !isPresented {
+          self.wrappedValue = nil
+        }
+      }
+    )
+  }
+  
+  func `case`<Enum, Case>(_ casePath: CasePath<Enum, Case>) -> Binding<Case?>
+  where Value == Enum? {
+    Binding<Case?>(
+      get: {
+        guard
+          let wrappedValue = self.wrappedValue,
+          let `case` = casePath.extract(from: wrappedValue)
+        else { return nil }
+        return `case`
+      },
+      set: { `case` in
+        if let `case` = `case` {
+          self.wrappedValue = casePath.embed(`case`)
+        } else {
+          self.wrappedValue = nil
+        }
+      }
+    )
+  }
 }
 
 extension View {
@@ -106,6 +144,19 @@ extension View {
     @ViewBuilder content: @escaping (Binding<Value>) -> Content
   ) -> some View where Value: Identifiable, Content: View {
     self.sheet(
+      item: optionalValue
+    ) { _ in
+      if let value = Binding(unwrap: optionalValue) {
+        content(value)
+      }
+    }
+  }
+
+  func popover<Value, Content>(
+    unwrap optionalValue: Binding<Value?>,
+    @ViewBuilder content: @escaping (Binding<Value>) -> Content
+  ) -> some View where Value: Identifiable, Content: View {
+    self.popover(
       item: optionalValue
     ) { _ in
       if let value = Binding(unwrap: optionalValue) {
