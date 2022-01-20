@@ -162,7 +162,10 @@ struct InventoryView: View {
     .navigationTitle("Inventory")
     .sheet(item: self.$viewModel.route.case(/InventoryViewModel.Route.add)) { itemToAdd in
       NavigationView {
-        ItemView(viewModel: itemToAdd)
+//        ItemView(viewModel: itemToAdd)
+        ToSwiftUI {
+          ItemViewController(viewModel: itemToAdd)
+        }
           .navigationTitle("Add")
           .toolbar {
             ToolbarItem(placement: .cancellationAction) {
@@ -173,16 +176,6 @@ struct InventoryView: View {
             }
           }
       }
-    }
-  }
-}
-
-struct TestView: View {
-  @State var collection = [1, 2, 3]
-
-  var body: some View {
-    ForEach(self.$collection, id: \.self) { $element in
-
     }
   }
 }
