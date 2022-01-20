@@ -1,10 +1,18 @@
 import CasePaths
 import SwiftUI
 
-class ItemRowViewModel: Identifiable, ObservableObject {
+class ItemRowViewModel: Hashable, Identifiable, ObservableObject {
   @Published var item: Item
   @Published var route: Route?
   @Published var isSaving = false
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(self.item.id)
+  }
+
+  static func == (lhs: ItemRowViewModel, rhs: ItemRowViewModel) -> Bool {
+    lhs.item.id == rhs.item.id
+  }
   
   enum Route: Equatable {
     case deleteAlert
@@ -90,10 +98,7 @@ struct ItemRowView: View {
       case: /ItemRowViewModel.Route.edit,
       onNavigate: self.viewModel.setEditNavigation(isActive:),
       destination: { $itemViewModel in
-//        ItemView(viewModel: itemViewModel)
-        ToSwiftUI {
-          ItemViewController(viewModel: itemViewModel)
-        }
+        ItemView(viewModel: itemViewModel)
           .navigationBarTitle("Edit")
           .navigationBarBackButtonHidden(true)
           .toolbar {
@@ -165,10 +170,7 @@ struct ItemRowView: View {
         item: self.$viewModel.route.case(/ItemRowViewModel.Route.duplicate)
       ) { itemViewModel in
         NavigationView {
-//          ItemView(viewModel: itemViewModel)
-          ToSwiftUI {
-            ItemViewController(viewModel: itemViewModel)
-          }
+          ItemView(viewModel: itemViewModel)
             .navigationBarTitle("Duplicate")
             .toolbar {
               ToolbarItem(placement: .cancellationAction) {
